@@ -1,8 +1,20 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+
 #ifndef __PUZZLE_H__
 #define __PUZZLE_H__
+
+/* Memory permissions */
+#define PZL_READ 0x04
+#define PZL_WRITE 0x02
+#define PZL_EXECUTE 0x01
+
+/* Headers */
+#define MGC_REC_HDR_LEN (3)
+#define HDR_REC_HDR_LEN (2 + 8 + 2 + 4)
+#define MEM_REC_HDR_LEN (2 + 8 + 8 + 8 + 8 + 1 + 1 + 8)
+#define REG_REC_HDR_LEN (2 + 8 + 8)
 
 /* 
 The UZL format will eventually support 8 processor architectures and have the following format.
@@ -14,15 +26,15 @@ The UZL format will eventually support 8 processor architectures and have the fo
    --------> ---------------
    |         | MEM_RECORD 0 | Memory Record
    |         ----------------
-   |         | DAT_RECORD 0 | Data Record
+   |         |     Data     | 
    |         ----------------
-   |         | STR_RECORD 0 | String Record (Optional)
+   |         |     Name     | Optional String Name
    |         ----------------
-DEFLATE     | MEM_RECORD N | Memory Record
+DEFLATE      | MEM_RECORD N | Memory Record
    |         ----------------
-   |         | DAT_RECORD N | Data Record
+   |         |     Data     | 
    |         ----------------
-   |         | STR_RECORD N | String Record (Optional)
+   |         |     Name     | Optional String Name
    |         ----------------
    |         |  REG_RECORD  | Register Record
    --------> ----------------
@@ -46,7 +58,7 @@ Header TLV
 ----------------------
 |       0x0000       | Type
 ----------------------
-| 0x0000000000000004 | Length
+| 0x000000000000000e | Length
 ---------------------- 
 |       0x0000       | Version
 ---------------------- 
@@ -55,9 +67,11 @@ Header TLV
 */
 typedef struct hdr_struct
 {
+    uint16_t type;
+    uint64_t length;
     uint16_t version;
     arch_t arch; 
-} hdr_t;
+} hdr_rec_t;
 
 /*
 Memory Record TLV
@@ -65,7 +79,7 @@ Memory Record TLV
 ----------------------
 |       0x0001       | Type
 ----------------------
-| 0x0000000000000019 | Length
+| 0x0000000000000024 | Length
 ----------------------
 | 0x0000000000000000 | Start
 ----------------------
@@ -75,58 +89,36 @@ Memory Record TLV
 ----------------------
 |        0x00        | Permissions
 ----------------------
+|        0x00        | String Name Flag
+----------------------
+|       *0x00        | Data
+----------------------
+|       *0x00        | String Name
+----------------------
 
 Memory Record's will always be appended with a string TLV for the binary absolute path if one 
 exists.
 */
-typedef struct mem_record_struct
+typedef struct mem_rec_struct
 {
+    uint16_t type;
+    uint64_t length;
     uint64_t start;
     uint64_t end;
     uint64_t size;
-    uint8_t read : 1;
-    uint8_t write : 1;
-    uint8_t execute : 1;
-    uint8_t padding : 5;
-} mem_record_t;
-
-/*
-Data Record TLV
-
-----------------------
-|       0x0002       | Type
-----------------------
-| 0x0000000000000000 | Length
-----------------------
-|        ...         | Data
-----------------------
-*/
-typedef struct dat_record_struct
-{
+    uint8_t perms;
+    uint8_t str_flag;
+    uint64_t str_size;
     uint8_t *dat;
-} dat_record_t;
-
-/*
-String Record TLV
-
-----------------------
-|       0x0003       | Type
-----------------------
-| 0x0000000000000000 | Length
-----------------------
-|        ...         | String
-----------------------
-*/
-typedef struct str_record_struct
-{
     uint8_t *str;
-} str_record_t;
+    struct mem_rec_struct *next;
+} mem_rec_t;
 
 /*
 Register Record TLV
 
 ----------------------
-|       0x0004       | Type 
+|       0x0002       | Type 
 ----------------------
 | 0x0000000000000000 | Length
 ----------------------
@@ -134,76 +126,84 @@ Register Record TLV
 ----------------------
 */
 
+typedef struct reg_rec_struct
+{
+  uint16_t type;
+  uint64_t length;
+  uint64_t user_regs_size;
+  void *user_regs;
+} reg_rec_t;
+
 /* 
 arch = x86_64 
 */
-
-/* user_64.h */
-struct user_regs_struct_x86_64 
+typedef struct user_regs_struct_x86_64 
 {
-    unsigned long   r15;
-    unsigned long   r14;
-    unsigned long   r13;
-    unsigned long   r12;
-    unsigned long   bp;
-    unsigned long   bx;
-    unsigned long   r11;
-    unsigned long   r10;
-    unsigned long   r9;
-    unsigned long   r8;
-    unsigned long   ax;
-    unsigned long   cx;
-    unsigned long   dx;
-    unsigned long   si;
-    unsigned long   di;
-    unsigned long   orig_ax;
-    unsigned long   ip;
-    unsigned long   cs;
-    unsigned long   flags;
-    unsigned long   sp;
-    unsigned long   ss;
-    unsigned long   fs_base;
-    unsigned long   gs_base;
-    unsigned long   ds;
-    unsigned long   es;
-    unsigned long   fs;
-    unsigned long   gs;
-};
-typedef struct user_regs_struct_x86_64 user_regs_x86_64_t;
+    uint64_t r15;
+    uint64_t r14;
+    uint64_t r13;
+    uint64_t r12;
+    uint64_t bp;
+    uint64_t bx;
+    uint64_t r11;
+    uint64_t r10;
+    uint64_t r9;
+    uint64_t r8;
+    uint64_t ax;
+    uint64_t cx;
+    uint64_t dx;
+    uint64_t si;
+    uint64_t di;
+    uint64_t orig_ax;
+    uint64_t ip;
+    uint64_t cs;
+    uint64_t flags;
+    uint64_t sp;
+    uint64_t ss;
+    uint64_t fs_base;
+    uint64_t gs_base;
+    uint64_t ds;
+    uint64_t es;
+    uint64_t fs;
+    uint64_t guser_regss;
+} user_regs_x86_64_t;
 
 /*
 Puzzle Context
 */
 typedef struct pzl_ctx_struct
 {
-    uint8_t magic[3];
-    hdr_t hdr;
-    struct mem_region_hdr_struct *mem_regions;
-    void *user_regs;
+    uint8_t mgc[3];
+    hdr_rec_t hdr_rec;
+    mem_rec_t *mem_rec;
+    reg_rec_t *reg_rec;
+    bool pkd;
+    uint8_t *pkd_dat; 
 } pzl_ctx_t;
 
-/*
-Memory Record Header
-*/
-typedef struct mem_region_hdr_struct
-{
-    struct mem_region_hdr_struct *next;
-    mem_record_t mem_record;
-    uint64_t dat_size;
-    uint8_t *dat;
-    uint64_t str_size;
-    uint8_t *str;
-} mem_record_hdr_t;
-
 /* Function prototypes */
-pzl_ctx_t* pzl_init();
-void pzl_free_mem(pzl_ctx_t *context);
+bool pzl_init(pzl_ctx_t **context, arch_t arch);
 bool pzl_free(pzl_ctx_t *context);
 bool pzl_set_arch(pzl_ctx_t *context, arch_t arch);
-bool pzl_add_mem(pzl_ctx_t *context, 
-                 mem_record_t *mem_record, 
-                 uint8_t *dat, 
-                 uint8_t *str);
-mem_record_hdr_t* pzl_last_mem_region(pzl_ctx_t *context);
+bool pzl_create_mem_rec(pzl_ctx_t *context,
+                           uint64_t start,
+                           uint64_t end,
+                           uint64_t size,
+                           uint8_t perms,
+                           uint8_t *dat,
+                           uint8_t *str);
+bool pzl_append_mem_rec(pzl_ctx_t *context, mem_rec_t *mem_rec);
+bool pzl_free_mem_rec(mem_rec_t *mem_rec);
+bool pzl_create_reg_rec(pzl_ctx_t *context, void *reg_rec);
+bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size);
+uint64_t pzl_get_mgc_size(pzl_ctx_t *context);
+uint64_t pzl_get_hdr_size(pzl_ctx_t *context);
+uint64_t pzl_get_mem_size(pzl_ctx_t *context);
+uint64_t pzl_get_reg_size(pzl_ctx_t *context);
+bool pzl_pack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
+bool pzl_pack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
+bool pzl_pack_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
+bool pzl_pack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
+bool pzl_pack_cmp_dat(uint8_t *cmp_data, uint8_t *data, uint64_t size, uint64_t *offset);
 
 #endif
