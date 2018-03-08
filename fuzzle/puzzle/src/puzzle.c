@@ -27,9 +27,10 @@ bool pzl_init(pzl_ctx_t **context, arch_t arch)
     
     /* Initialise header */
     (*context)->hdr_rec.type = 0x0000;
-    (*context)->hdr_rec.length = sizeof(hdr_rec_t);
-    (*context)->hdr_rec.version = 0x00;
+    (*context)->hdr_rec.length = (2 + 8 + 2 + 4 + 8);
+    (*context)->hdr_rec.version = 0x0000;
     (*context)->hdr_rec.arch = arch;
+    (*context)->hdr_rec.data_size = 0;
 
     return true;
 }
@@ -37,13 +38,8 @@ bool pzl_init(pzl_ctx_t **context, arch_t arch)
 /* Free pzl library */
 bool pzl_free(pzl_ctx_t *context)
 {
-    /* Check context pointer */
-    if(context == NULL)
-    {
-        printf("pzl_free: context has not been set\n");
-        return false;
-    }
-    
+    CHECK_PTR(context, "pzl_free - context:");
+
     /* Check at least memory region exists */
     if(context->mem_rec != NULL)
     {
@@ -59,7 +55,7 @@ bool pzl_free(pzl_ctx_t *context)
     }
 
     /* Free user registers */
-    if(context->reg_rec->user_regs)
+    if(context->reg_rec && context->reg_rec->user_regs)
     {
         free(context->reg_rec->user_regs);
         context->reg_rec->user_regs = NULL;

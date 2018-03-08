@@ -14,7 +14,7 @@ int main(int argc, char **argv, char **envp)
 
     /* Initialise */
     pzl_ctx_t *context;
-    ret = pzl_init(&context, x86_64);
+    ret = pzl_init(&context, X86_64);
     if(!ret)
     {
         printf("Context not set\n");
@@ -98,11 +98,8 @@ int main(int argc, char **argv, char **envp)
     pzl_pack(context, &dat, &size);
 
     /* Debug */
-    printf("data: ");
     for(uint64_t offset = 0; offset < size; offset++)
         printf("%c", *(dat + offset));
-    printf("\n");
-    printf("size: %d\n", size);
 
     /* Clean up */
     free(dat0);

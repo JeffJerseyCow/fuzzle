@@ -14,19 +14,8 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
                            uint8_t *dat,
                            uint8_t *str)
 {
-    /* Check context pointer */
-    if(context == NULL)
-    {
-        printf("pzl_create_mem_record: context has not been set\n");
-        return false;
-    }
-
-    /* Check dat pointer */
-    if(dat == NULL)
-    {
-        printf("pzl_create_mem_record: dat has not been set\n");
-        return false;
-    }
+    CHECK_PTR(context, "pzl_create_mem_record - context");
+    CHECK_PTR(dat, "pzl_create_mem_record - dat");
 
     /* Create mem_rec */
     mem_rec_t *mem_rec = (mem_rec_t *) malloc(sizeof(mem_rec_t));
@@ -73,7 +62,7 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
     }
 
     mem_rec->type = 0x0001;
-    mem_rec->length = MEM_REC_HDR_LEN + size + mem_rec->str_size;
+    mem_rec->length = (2 + 8 + 8 + 8 + 8 + 1 + 1 + 8 + mem_rec->str_size + size);
     mem_rec->start = start;
     mem_rec->end = end;
     mem_rec->size = size;
@@ -97,12 +86,7 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
 /* Append new memory record to context */
 bool pzl_append_mem_rec(pzl_ctx_t *context, mem_rec_t *mem_rec)
 {
-    /* Check context pointer */
-    if(context == NULL)
-    {
-        printf("pzl_append_mem_record: context has not been set\n");
-        return false;
-    }
+    CHECK_PTR(context, "pzl_append_mem_rec - context");
 
     /* Set head */
     if(context->mem_rec == NULL)

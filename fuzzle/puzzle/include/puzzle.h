@@ -10,11 +10,30 @@
 #define PZL_WRITE 0x02
 #define PZL_EXECUTE 0x01
 
-/* Headers */
-#define MGC_REC_HDR_LEN (3)
-#define HDR_REC_HDR_LEN (2 + 8 + 2 + 4)
-#define MEM_REC_HDR_LEN (2 + 8 + 8 + 8 + 8 + 1 + 1 + 8)
-#define REG_REC_HDR_LEN (2 + 8 + 8)
+/* Checks */
+#define CHECK_PTR(__ptr, __msg) \
+    if(__ptr == NULL) \
+    { \
+        printf("%s: has not been allocated\n", __msg); \
+        return false; \
+    }
+
+#define CHECK_SIZE(__size, __offset, __value, __msg) \
+    if((__size <= 0)) \
+    { \
+        printf("%s: cannot be zero or less\n", __msg); \
+        return false; \
+    } \
+    else if(((int64_t) __size - (((int64_t) __offset) & 0x7fffffffffffffff)) <= 0) \
+    { \
+        printf("%s: offset is too big\n", __msg); \
+        return false; \
+    } \
+    else if(((int64_t) __size - (((int64_t) __offset) & 0x7fffffffffffffff)) < __value) \
+    { \
+        printf("%s: not enough data remaining\n", __msg); \
+        return false; \
+    }
 
 /* 
 The UZL format will eventually support 8 processor architectures and have the following format.
@@ -42,14 +61,15 @@ DEFLATE      | MEM_RECORD N | Memory Record
 
 typedef enum arch_enum
 {
-    x86_64 = 0,
-    x86_32 = 1,
-    arm = 2,
-    aarch64 = 3,
-    ppc_64 = 4,
-    ppc_32 = 5,
-    mips_64 = 6,
-    mips_32 = 7
+    X86_64 = 0,
+    X86_32 = 1,
+    ARM = 2,
+    AARCH64 = 3,
+    PPC_64 = 4,
+    PPC_32 = 5,
+    MIPS_64 = 6,
+    MIPS_32 = 7,
+    UNKN_ARCH = 8
 } arch_t;
 
 /*
@@ -70,7 +90,8 @@ typedef struct hdr_struct
     uint16_t type;
     uint64_t length;
     uint16_t version;
-    arch_t arch; 
+    arch_t arch;
+    uint64_t data_size;
 } hdr_rec_t;
 
 /*
@@ -128,10 +149,10 @@ Register Record TLV
 
 typedef struct reg_rec_struct
 {
-  uint16_t type;
-  uint64_t length;
-  uint64_t user_regs_size;
-  void *user_regs;
+    uint16_t type;
+    uint64_t length;
+    uint64_t user_regs_size;
+    void *user_regs;
 } reg_rec_t;
 
 /* 
@@ -184,7 +205,6 @@ typedef struct pzl_ctx_struct
 /* Function prototypes */
 bool pzl_init(pzl_ctx_t **context, arch_t arch);
 bool pzl_free(pzl_ctx_t *context);
-bool pzl_set_arch(pzl_ctx_t *context, arch_t arch);
 bool pzl_create_mem_rec(pzl_ctx_t *context,
                            uint64_t start,
                            uint64_t end,
@@ -195,15 +215,23 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
 bool pzl_append_mem_rec(pzl_ctx_t *context, mem_rec_t *mem_rec);
 bool pzl_free_mem_rec(mem_rec_t *mem_rec);
 bool pzl_create_reg_rec(pzl_ctx_t *context, void *reg_rec);
-bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size);
 uint64_t pzl_get_mgc_size(pzl_ctx_t *context);
 uint64_t pzl_get_hdr_size(pzl_ctx_t *context);
 uint64_t pzl_get_mem_size(pzl_ctx_t *context);
 uint64_t pzl_get_reg_size(pzl_ctx_t *context);
+bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size);
 bool pzl_pack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
-bool pzl_pack_cmp_dat(uint8_t *cmp_data, uint8_t *data, uint64_t size, uint64_t *offset);
+bool pzl_pack_cmp_dat(uint8_t *cmp_data, uint8_t *data, uint64_t *offset, uint64_t size);
+bool pzl_unpack(pzl_ctx_t *context, uint8_t *data, uint64_t size);
+bool pzl_unpack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
+bool pzl_unpack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
+bool pzl_unpack_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
+bool pzl_unpack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
+bool pzl_unpack_cmp_dat(uint8_t **cmp_data, uint8_t *data, uint64_t *offset, uint64_t size);
+
+/* Compression */
 
 #endif

@@ -5,31 +5,25 @@
 /* Get magic size */
 uint64_t pzl_get_mgc_size(pzl_ctx_t *context)
 {
-    return MGC_REC_HDR_LEN;
+    CHECK_PTR(context, "pzl_get_mgc_size - context");
+    
+    return (3);
 }
 
 /* Get header size */
 uint64_t pzl_get_hdr_size(pzl_ctx_t *context)
 {
-    return HDR_REC_HDR_LEN;
+    CHECK_PTR(context, "pzl_get_hdr_size - context");
+    
+    return context->hdr_rec.length;
 }
 
 /* Get memory records total size */
 uint64_t pzl_get_mem_size(pzl_ctx_t *context)
 {
     /* Check context pointer */
-    if(context == NULL)
-    {
-        printf("pzl_get_total_mem_size: context has not been set\n");
-        return false;
-    }
-
-    /* Check at least one memory record */
-    if(context->mem_rec == NULL)
-    {
-        printf("pzl_get_total_mem_size: at least one memory record has to be set\n");
-        return false;
-    }
+    CHECK_PTR(context, "pzl_get_mem_size - context");
+    CHECK_PTR(context->mem_rec, "pzl_get_mem_size - context->mem_rec");
 
     /* Walk list */
     uint64_t cum_size = 0;
@@ -46,5 +40,8 @@ uint64_t pzl_get_mem_size(pzl_ctx_t *context)
 /* Get register record size */
 uint64_t pzl_get_reg_size(pzl_ctx_t *context)
 {
+    CHECK_PTR(context, "pzl_get_reg_size - context");
+    CHECK_PTR(context->reg_rec, "pzl_get_reg_size - context->reg_rec");
+
     return context->reg_rec->length;
 }
