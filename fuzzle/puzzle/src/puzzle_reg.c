@@ -5,10 +5,10 @@
 
 
 /* Create register record */
-bool pzl_create_reg_rec(pzl_ctx_t *context, void *user_regs)
+bool pzl_create_reg_rec(pzl_ctx_t *context, void *usr_reg)
 {
     CHECK_PTR(context, "pzl_create_reg_rec - context");
-    CHECK_PTR(user_regs, "pzl_create_reg_rec - user_regs");
+    CHECK_PTR(usr_reg, "pzl_create_reg_rec - user_regs");
 
     /* Create register record */
     reg_rec_t *reg_rec = (reg_rec_t *) malloc(sizeof(reg_rec_t));
@@ -23,10 +23,10 @@ bool pzl_create_reg_rec(pzl_ctx_t *context, void *user_regs)
     switch(context->hdr_rec.arch)
     {
         case X86_64:
-            reg_rec->user_regs = (void *) malloc(sizeof(user_regs_x86_64_t));
-            memcpy(reg_rec->user_regs, user_regs, sizeof(user_regs_x86_64_t));
+            reg_rec->usr_reg = (void *) malloc(sizeof(user_regs_x86_64_t));
+            memcpy(reg_rec->usr_reg, usr_reg, sizeof(user_regs_x86_64_t));
             reg_rec->length = (2 + 8 + 8) + sizeof(user_regs_x86_64_t);
-            reg_rec->user_regs_size = sizeof(user_regs_x86_64_t);
+            reg_rec->usr_reg_len = sizeof(user_regs_x86_64_t);
             context->reg_rec = reg_rec;
             break;
 

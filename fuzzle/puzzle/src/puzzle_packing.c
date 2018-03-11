@@ -200,7 +200,7 @@ bool pzl_pack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset)
 {
     CHECK_PTR(context, "pzl_pack_reg_rec - context");
     CHECK_PTR(context->reg_rec, "pzl_pack_reg_rec - context->reg_rec");
-    CHECK_PTR(context->reg_rec->user_regs, "pzl_pack_reg_rec - context->reg_rec->user_regs");
+    CHECK_PTR(context->reg_rec->usr_reg, "pzl_pack_reg_rec - context->reg_rec->usr_reg");
 
     /* Type */
     memcpy(data + *offset, &(context->reg_rec->type), sizeof(context->reg_rec->type));
@@ -212,13 +212,13 @@ bool pzl_pack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset)
 
     /* User registers size */
     memcpy(data + *offset, 
-           &(context->reg_rec->user_regs_size), 
-           sizeof(context->reg_rec->user_regs_size));
-    *offset += sizeof(context->reg_rec->user_regs_size);
+           &(context->reg_rec->usr_reg_len), 
+           sizeof(context->reg_rec->usr_reg_len));
+    *offset += sizeof(context->reg_rec->usr_reg_len);
 
     /* User registers */
-    memcpy(data + *offset, context->reg_rec->user_regs, context->reg_rec->user_regs_size);
-    *offset += context->reg_rec->user_regs_size;
+    memcpy(data + *offset, context->reg_rec->usr_reg, context->reg_rec->usr_reg_len);
+    *offset += context->reg_rec->usr_reg_len;
 
     return true;
 }
@@ -249,6 +249,7 @@ bool pzl_unpack(pzl_ctx_t *context, uint8_t *data, uint64_t size)
     uint32_t cmp_status;
 
     /* Unpack magic */
+    offset = 0;
     ret = pzl_unpack_mgc(context, data, &offset, size);
     if(ret == false)
     {
@@ -297,13 +298,31 @@ bool pzl_unpack(pzl_ctx_t *context, uint8_t *data, uint64_t size)
     cmp_data = NULL;
 
     /* Unpack memory records */
+    offset = 0;
+    ret = pzl_unpack_mem_rec(context, uncmp_data, &offset, context->hdr_rec.data_size);
+    if(ret == false)
+    {
+        printf("pzl_unpack: cannot unpack memory records\n");
+        free(uncmp_data);
+        uncmp_data = NULL;
+        return false;
+    }
 
     /* Unpack register record */
+    ret = pzl_unpack_reg_rec(context, uncmp_data, &offset, context->hdr_rec.data_size);
+    if(ret == false)
+    {
+        printf("pzl_unpack: cannot unpack register record\n");
+        free(uncmp_data);
+        uncmp_data = NULL;
+        return false;
+    }
 
     /* Clean up */
     free(uncmp_data);
     uncmp_data = NULL;
 
+    return true;
 }
 
 /* Unpack magic bytes */
@@ -315,7 +334,7 @@ bool pzl_unpack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_
     CHECK_SIZE(size, *offset, 3, "pzl_unpack_mgc - data");
 
     /* Check magic */
-    if(strncmp(data + *offset, "\x55\x5a\x4c", 3) != 0)
+    if(strncmp((const char *) (data + *offset), "\x55\x5a\x4c", 3) != 0)
     {
         printf("pzl_unpack_mgc: unrecognised file type\n");
         return false;
@@ -336,9 +355,9 @@ bool pzl_unpack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uin
     CHECK_SIZE(size, *offset, (2 + 8 + 2 + 4 + 8), "pzl_unpack_hdr_rec - data");
     
     /* Check type */
-    if(strncmp(data + *offset, "\x00\x00", 2) != 0)
+    if(strncmp((const char *) (data + *offset), "\x00\x00", 2) != 0)
     {
-        printf("pzl_unpack_hdr_rec: cannot find puzzle header\n");
+        printf("pzl_unpack_hdr_rec: cannot find header\n");
         return false;
     }
 
@@ -365,12 +384,209 @@ bool pzl_unpack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uin
     return true;
 }
 
-/* Unpack */
+/* Unpack memory records */
 bool pzl_unpack_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size)
 {
+    CHECK_PTR(context, "pzl_unpack_mem_rec - context");
+    CHECK_PTR(data, "pzl_unpack_mem_rec - data");
+    CHECK_PTR(offset, "pzl_unpack_mem_rec - offset");
 
+    /* Unpack */
+    while(pzl_unpack_sgl_mem_rec(context, data, offset, size) == true);
+
+    /* Require at least one memory record */
+    if(context->mem_rec == NULL)
+    {
+        printf("pzl_unpack_mem_rec: no memory records found\n");
+        return false;
+    }
+
+    return true;
 }
 
+/* Unpack single memory record */
+bool pzl_unpack_sgl_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size)
+{
+    CHECK_PTR(context, "pzl_unpack_sgl_mem_rec - context");
+    CHECK_PTR(data, "pzl_unpack_sgl_mem_rec - data");
+    CHECK_PTR(offset, "pzl_unpack_sgl_mem_rec - offset");
+
+    /* Check type */
+    if(strncmp((const char *) (data + *offset), "\x01\x00", 2) != 0)
+    {
+        return false;
+    }
+    *offset += 2;
+
+    /* Length */
+    uint8_t mem_len_buf[8];
+    memcpy(mem_len_buf, data + *offset, 8);
+    *offset += 8;
+    uint64_t mem_len = BUF_TO_UINT64(mem_len_buf);
+    if(mem_len > (size - *offset - 8 - 2))
+    {
+        printf("pzl_unpack_sgl_mem_rec: not enough data remaining\n");
+        return false;
+    }
+
+    /* Start */
+    uint8_t mem_start_buf[8];
+    memcpy(mem_start_buf, data + *offset, 8);
+    *offset += 8;
+    uint64_t mem_start = BUF_TO_UINT64(mem_start_buf);
+
+    /* End */
+    uint8_t mem_end_buf[8];
+    memcpy(mem_end_buf, data + *offset, 8);
+    *offset += 8;
+    uint64_t mem_end = BUF_TO_UINT64(mem_end_buf);
+
+    /* Size */
+    uint8_t mem_size_buf[8];
+    memcpy(mem_size_buf, data + *offset, 8);
+    *offset += 8;
+    uint64_t mem_size = BUF_TO_UINT64(mem_size_buf);
+
+    /* Permissions */
+    uint8_t mem_perms;
+    memcpy(&mem_perms, data + *offset, 1);
+    *offset += 1;
+
+    /* String flag */
+    uint8_t mem_str_flag;
+    memcpy(&mem_str_flag, data + *offset, 1);
+    *offset += 1;
+
+    /* String length */
+    uint64_t mem_str_len;
+    if(mem_str_flag == 0x01)
+    {
+        uint8_t mem_str_len_buf[8];
+        memcpy(mem_str_len_buf, data + *offset, 8);
+        mem_str_len = BUF_TO_UINT64(mem_str_len_buf);
+    }
+    else
+    {
+        mem_str_len = 0x00;
+    }
+    *offset += 8;
+
+    /* Data */
+    uint8_t *mem_data = (uint8_t *) malloc(mem_size);
+    if(mem_data == NULL)
+    {
+        printf("pzl_unpack_sgl_mem_rec: cannot allocate data buffer\n");
+        return false;
+    }
+    memcpy(mem_data, data + *offset, mem_size);
+    *offset += mem_size;
+
+    /* String */
+    uint8_t *mem_str = NULL;
+    if(mem_str_flag == 0x01)
+    {
+        mem_str = (uint8_t *) malloc(mem_str_len);
+        if(mem_str == NULL)
+        {
+            printf("pzl_unpack_sgl_mem_rec: cannot allocated string buffer\n");
+            free(mem_data);
+            mem_data = NULL;
+        }
+        memcpy(mem_str, data + *offset, mem_str_len);
+    }
+    *offset += mem_str_len;
+
+    /* Create memory record */
+    if(pzl_create_mem_rec(context,
+                          mem_start,
+                          mem_end,
+                          mem_size,
+                          mem_perms,
+                          mem_str_len,
+                          mem_data,
+                          mem_str) == false)
+    {
+        printf("pzl_unpack_sgl_mem_rec: cannot create memory record\n");
+        free(mem_str);
+        mem_str = NULL;
+        free(mem_data);
+        mem_data = NULL;
+
+        return false;
+    }
+
+    /* Clean up */
+    free(mem_str);
+    mem_str = NULL;
+    free(mem_data);
+    mem_data = NULL;
+
+    return true;
+}
+
+/* Unpack register record */
+bool pzl_unpack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size)
+{
+    CHECK_PTR(context, "pzl_unpack_reg_rec - context");
+    CHECK_PTR(data, "pzl_unpack_reg_rec - data");
+    CHECK_PTR(offset, "pzl_unpack_reg_rec - offset");
+
+    /* Check type */
+    if(strncmp((const char *) (data + *offset), "\x02\x00", 2) != 0)
+    {
+        printf("pzl_unpack_reg_rec: cannot find register record\n");
+        return false;
+    }
+    *offset += 2;
+
+    /* Length */
+    uint8_t reg_len_buf[8];
+    memcpy(reg_len_buf, data + *offset, 8);
+    *offset += 8;
+    uint64_t reg_len = BUF_TO_UINT64(reg_len_buf);
+
+    /* Check remaining data */
+    if(reg_len > (size - (*offset - 8 - 2)))
+    {
+        printf("pzl_unpack_reg_rec: not enough data remaining\n");
+        return false;
+    }
+
+    /* User data registers size */
+    uint8_t usr_reg_len_buf[8];
+    memcpy(usr_reg_len_buf, data + *offset, 8);
+    *offset += 8;
+    uint64_t usr_reg_len = BUF_TO_UINT64(usr_reg_len_buf);
+
+    /* Check size of user registers */
+    uint64_t tmp_usr_reg_len = pzl_get_usr_reg_size(context);
+    if(usr_reg_len != tmp_usr_reg_len)
+    {
+        printf("pzl_unpack_reg_rec: incorrect architecture set\n");
+        return false;
+    }
+
+    /* Create register record */
+    uint8_t *usr_reg = (uint8_t *) malloc(usr_reg_len);
+    memcpy(usr_reg, data + *offset, usr_reg_len);
+    *offset += usr_reg_len;
+
+    bool ret;
+    ret = pzl_create_reg_rec(context, usr_reg);
+    if(ret == false)
+    {
+        printf("pzl_unpack_reg_rec: cannot create register record\n");
+        return false;
+    }
+
+    /* Clean up */
+    free(usr_reg);
+    usr_reg = NULL;
+
+    return true;
+}
+
+/* Unpack compressed data */
 bool pzl_unpack_cmp_dat(uint8_t **cmp_data, uint8_t *data, uint64_t *offset, uint64_t size)
 {
     CHECK_PTR(data, "pzl_unpack_cmp_dat - data");

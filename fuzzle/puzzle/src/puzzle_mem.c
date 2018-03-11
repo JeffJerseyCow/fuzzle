@@ -11,6 +11,7 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
                            uint64_t end,
                            uint64_t size,
                            uint8_t perms,
+                           uint64_t str_size,
                            uint8_t *dat,
                            uint8_t *str)
 {
@@ -35,7 +36,7 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
     }
 
     /* Initalise */
-    if(str == NULL)
+    if(str == NULL || str_size <= 0)
     {
         mem_rec->str_flag = 0x00;
         mem_rec->str_size = 0x0000000000000000;
@@ -44,8 +45,8 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
     else
     {
         /* Create string buffer */
-        uint64_t str_size = strlen(str);
-        uint8_t *str_buf = (uint8_t *) malloc(str_size);
+        uint64_t tmp_str_size = str_size;
+        uint8_t *str_buf = (uint8_t *) malloc(tmp_str_size);
         if(str_buf == NULL)
         {
             printf("pzl_create_mem_record: cannot allocate space for data buffer\n");
@@ -54,10 +55,9 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
             pzl_free_mem_rec(mem_rec);
             return false;
         }
-        memcpy(str_buf, str, str_size);
-
+        memcpy(str_buf, str, tmp_str_size);
         mem_rec->str_flag = 0x01;
-        mem_rec->str_size = str_size;
+        mem_rec->str_size = tmp_str_size;
         mem_rec->str = str_buf;
     }
 

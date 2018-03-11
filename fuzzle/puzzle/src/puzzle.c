@@ -55,10 +55,10 @@ bool pzl_free(pzl_ctx_t *context)
     }
 
     /* Free user registers */
-    if(context->reg_rec && context->reg_rec->user_regs)
+    if(context->reg_rec && context->reg_rec->usr_reg)
     {
-        free(context->reg_rec->user_regs);
-        context->reg_rec->user_regs = NULL;
+        free(context->reg_rec->usr_reg);
+        context->reg_rec->usr_reg = NULL;
     }
     free(context->reg_rec);
     context->reg_rec = NULL;

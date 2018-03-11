@@ -35,6 +35,17 @@
         return false; \
     }
 
+/* Conversions */
+#define BUF_TO_UINT64(__buf) \
+    (uint64_t) __buf[0] + \
+    ((uint64_t) __buf[1] << 8) + \
+    ((uint64_t) __buf[2] << 16) + \
+    ((uint64_t) __buf[3] << 24) + \
+    ((uint64_t) __buf[4] << 32) + \
+    ((uint64_t) __buf[5] << 40) + \
+    ((uint64_t) __buf[6] << 48) + \
+    ((uint64_t) __buf[7] << 56)
+
 /* 
 The UZL format will eventually support 8 processor architectures and have the following format.
 
@@ -143,7 +154,7 @@ Register Record TLV
 ----------------------
 | 0x0000000000000000 | Length
 ----------------------
-|  user_regs_struct  | Registers
+|   usr_reg_struct   | Registers
 ----------------------
 */
 
@@ -151,8 +162,8 @@ typedef struct reg_rec_struct
 {
     uint16_t type;
     uint64_t length;
-    uint64_t user_regs_size;
-    void *user_regs;
+    uint64_t usr_reg_len;
+    void *usr_reg;
 } reg_rec_t;
 
 /* 
@@ -210,6 +221,7 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
                            uint64_t end,
                            uint64_t size,
                            uint8_t perms,
+                           uint64_t str_size,
                            uint8_t *dat,
                            uint8_t *str);
 bool pzl_append_mem_rec(pzl_ctx_t *context, mem_rec_t *mem_rec);
@@ -219,6 +231,7 @@ uint64_t pzl_get_mgc_size(pzl_ctx_t *context);
 uint64_t pzl_get_hdr_size(pzl_ctx_t *context);
 uint64_t pzl_get_mem_size(pzl_ctx_t *context);
 uint64_t pzl_get_reg_size(pzl_ctx_t *context);
+uint64_t pzl_get_usr_reg_size(pzl_ctx_t *context);
 bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size);
 bool pzl_pack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
@@ -229,6 +242,8 @@ bool pzl_unpack(pzl_ctx_t *context, uint8_t *data, uint64_t size);
 bool pzl_unpack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
 bool pzl_unpack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
 bool pzl_unpack_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
+bool pzl_unpack_sgl_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
+bool pzl_unpack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
 bool pzl_unpack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
 bool pzl_unpack_cmp_dat(uint8_t **cmp_data, uint8_t *data, uint64_t *offset, uint64_t size);
 

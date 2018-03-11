@@ -38,6 +38,7 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
+                             0,
                              dat0,
                              NULL) == false)
     {
@@ -51,6 +52,7 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
+                             strlen("hello derp"),
                              dat1,
                              str) == false)
     {
@@ -58,7 +60,7 @@ int main(int argc, char **argv, char **envp)
     }
 
     uint8_t *str_s = (uint8_t *) malloc(20);
-    sprintf(str_s, "hello");
+    sprintf((char *) str_s, "hello");
 
     /* Create memory record */
     if(pzl_create_mem_rec(context,
@@ -66,6 +68,7 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
+                             strlen("hello"),
                              dat2,
                              str_s) == false)
     {
@@ -81,6 +84,7 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
+                             0,
                              dat3,
                              NULL) == false)
     {
@@ -88,9 +92,9 @@ int main(int argc, char **argv, char **envp)
     }
     
     /* Create reg record */
-    user_regs_x86_64_t user_regs;
-    memset(&user_regs, 0x45, sizeof(user_regs_x86_64_t));
-    pzl_create_reg_rec(context, &user_regs);
+    user_regs_x86_64_t usr_reg;
+    memset(&usr_reg, 0x45, sizeof(user_regs_x86_64_t));
+    pzl_create_reg_rec(context, &usr_reg);
 
     /* Pack data */
     uint8_t *dat;
