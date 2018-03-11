@@ -12,3 +12,6 @@ add_executable(unpack_test unpack_test.c)
 # Reference libraries
 target_link_libraries(pack_test puzzle)
 target_link_libraries(unpack_test puzzle)
+
+# Install
+install(TARGETS puzzle DESTINATION lib)
