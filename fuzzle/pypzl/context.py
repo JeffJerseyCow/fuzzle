@@ -4,10 +4,15 @@ import ctypes
 
 class PuzzleContext(object):
     """
+    Python binding for the puzzle library.
     """
 
     def __init__(self, arch):
         """
+        Initialise puzzle context.
+
+        Args:
+            arch: Processor archiecture.
         """
 
         # Get file location
@@ -18,10 +23,9 @@ class PuzzleContext(object):
         try:
             self._libpzl = ctypes.cdll.LoadLibrary(libpuzzle_path)
         except OSError:
-            print('Cannot load Puzzle library')
-            raise OSError
+            raise OSError('Cannot load Puzzle library')
 
-        # Get context
+        # Set context pointer
         self._ctx = ctypes.c_void_p()
 
         # Set 'bool pzl_init(pzl_ctx_t **context, arch_t arch) function
@@ -36,6 +40,16 @@ class PuzzleContext(object):
 
     def add_mem_rec(self, start, end, size, perms, dat, s_size=0, s_dat=None):
         """
+        Add memory record to puzzle context.
+
+        Args:
+            start: Memory segments start virtual address.
+            end: Memory segments end virtual address.
+            size: Size of memory segment.
+            perms: Permissions of memory segment.
+            dat: Raw memory segment data.
+            s_size: Size of optional string.
+            s_dat: Optional string data.
         """
 
         # Set 'bool pzl_create_mem_rec(pzl_ctx_t *context,
@@ -70,6 +84,10 @@ class PuzzleContext(object):
 
     def add_reg_rec(self, reg_reg):
         """
+        Add register record to puzzle context.
+
+        Args:
+            reg_rec: Raw register record.
         """
 
         # Set 'bool pzl_create_reg_rec(pzl_ctx_t *context,
@@ -85,6 +103,11 @@ class PuzzleContext(object):
 
     def _get_size(self):
         """
+        Calculates the maximum size of the puzzle context data when packed
+        including compression.
+
+        Returns:
+            Maximum data size of packed data.
         """
 
         # Set 'uint64_t pzl_pack_size(pzl_ctx_t *context)'
@@ -101,6 +124,10 @@ class PuzzleContext(object):
 
     def pack(self):
         """
+        Packs the puzzle context into UZL format.
+
+        Returns:
+            Packed data as a byte array.
         """
 
         # Get size
@@ -123,6 +150,7 @@ class PuzzleContext(object):
 
     def free(self):
         """
+        Frees the puzzle context.
         """
 
         # Set bool pzl_free(pzl_context_t *context) function
@@ -136,12 +164,15 @@ class PuzzleContext(object):
 
 
 if __name__ == '__main__':
+    """
+    Example python usage that matches bin/pack_test output.
+    """
+
     ctx = PuzzleContext(0)
     dat3 = 'A' * 0x400
     dat2 = 'B' * 0x400
     dat1 = 'C' * 0x400
     dat0 = 'D' * 0x400
-
     ctx.add_mem_rec(0x4000, 0x4400, len(dat3), 5, str.encode(dat3))
     ctx.add_mem_rec(0x4000,
                     0x4400,

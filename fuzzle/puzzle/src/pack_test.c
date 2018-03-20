@@ -38,8 +38,8 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
-                             0,
                              dat0,
+                             0,
                              NULL) == false)
     {
         printf("main: couldn't create memory record\n");
@@ -52,8 +52,8 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
-                             strlen("hello derp"),
                              dat1,
+                             strlen("hello derp"),
                              str) == false)
     {
         printf("main: couldn't create memory record\n");
@@ -68,8 +68,8 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
-                             strlen("hello"),
                              dat2,
+                             strlen("hello"),
                              str_s) == false)
     {
         printf("main: couldn't create memory record\n");
@@ -84,13 +84,13 @@ int main(int argc, char **argv, char **envp)
                              0x4400,
                              0x400,
                              PZL_READ | PZL_EXECUTE,
-                             0,
                              dat3,
+                             0,
                              NULL) == false)
     {
         printf("main: couldn't create memory record\n");
     }
-    
+
     /* Create reg record */
     user_regs_x86_64_t usr_reg;
     memset(&usr_reg, 0x45, sizeof(user_regs_x86_64_t));
@@ -99,13 +99,22 @@ int main(int argc, char **argv, char **envp)
     /* Pack data */
     uint8_t *dat;
     uint64_t size;
-    pzl_pack(context, &dat, &size);
+    dat = (uint8_t *) malloc(pzl_pack_size(context));
+    if(dat == NULL)
+    {
+      printf("main: cannot allocate dat buffer\n");
+    }
+    else
+    {
+      pzl_pack(context, dat, &size);
 
-    /* Debug */
-    for(uint64_t offset = 0; offset < size; offset++)
-        printf("%c", *(dat + offset));
+      /* Debug */
+      for(uint64_t offset = 0; offset < size; offset++)
+          printf("%c", *(dat + offset));
+    }
 
     /* Clean up */
+    free(dat);
     free(dat0);
     free(dat1);
     free(dat2);

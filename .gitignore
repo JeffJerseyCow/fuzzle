@@ -1,6 +1,7 @@
 # Folders
 /dist
 /build
+/fuzzle/pypzl/build
 /*.egg-info
 # Files
 *.pyc

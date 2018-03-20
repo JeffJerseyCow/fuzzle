@@ -22,9 +22,7 @@ bool pzl_init(pzl_ctx_t **context, arch_t arch)
     memcpy((*context)->mgc, "\x55\x5a\x4c", 3);
     (*context)->mem_rec = NULL;
     (*context)->reg_rec = NULL;
-    (*context)->pkd = false;
-    (*context)->pkd_dat = NULL;
-    
+
     /* Initialise header */
     (*context)->hdr_rec.type = 0x0000;
     (*context)->hdr_rec.length = (2 + 8 + 2 + 4 + 8);
@@ -62,13 +60,6 @@ bool pzl_free(pzl_ctx_t *context)
     }
     free(context->reg_rec);
     context->reg_rec = NULL;
-
-    /* Free packed data */
-    if(context->pkd)
-    {
-        free(context->pkd_dat);
-        context->pkd_dat = NULL;
-    }
 
     /* Free context pointer */
     free(context);

@@ -11,8 +11,8 @@ bool pzl_create_mem_rec(pzl_ctx_t *context,
                            uint64_t end,
                            uint64_t size,
                            uint8_t perms,
-                           uint64_t str_size,
                            uint8_t *dat,
+                           uint64_t str_size,
                            uint8_t *str)
 {
     CHECK_PTR(context, "pzl_create_mem_record - context");
@@ -95,7 +95,7 @@ bool pzl_append_mem_rec(pzl_ctx_t *context, mem_rec_t *mem_rec)
     else
     {
         mem_rec_t *cur_mem_rec = context->mem_rec;
-        
+
         /* Walk context mem_record list */
         while(cur_mem_rec->next != NULL)
         {
@@ -114,7 +114,7 @@ bool pzl_append_mem_rec(pzl_ctx_t *context, mem_rec_t *mem_rec)
 bool pzl_free_mem_rec(mem_rec_t *mem_rec)
 {
     /* Check mem_record pointer */
-    if(mem_rec == NULL)    
+    if(mem_rec == NULL)
         return true;
 
     /* Free memory */

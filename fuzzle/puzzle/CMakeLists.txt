@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.10.0)
 project(puzzle)
 
 # Flags
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -O0 -fsanitize=address -Wall")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall")
 
 # Includes
 include_directories(include)

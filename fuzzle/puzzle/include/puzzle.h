@@ -46,7 +46,7 @@
     ((uint64_t) __buf[6] << 48) + \
     ((uint64_t) __buf[7] << 56)
 
-/* 
+/*
 The UZL format will eventually support 8 processor architectures and have the following format.
 
              ----------------
@@ -56,13 +56,13 @@ The UZL format will eventually support 8 processor architectures and have the fo
    --------> ---------------
    |         | MEM_RECORD 0 | Memory Record
    |         ----------------
-   |         |     Data     | 
+   |         |     Data     |
    |         ----------------
    |         |     Name     | Optional String Name
    |         ----------------
 DEFLATE      | MEM_RECORD N | Memory Record
    |         ----------------
-   |         |     Data     | 
+   |         |     Data     |
    |         ----------------
    |         |     Name     | Optional String Name
    |         ----------------
@@ -90,9 +90,9 @@ Header TLV
 |       0x0000       | Type
 ----------------------
 | 0x000000000000000e | Length
----------------------- 
+----------------------
 |       0x0000       | Version
----------------------- 
+----------------------
 |       0x0000       | Arch
 ----------------------
 */
@@ -128,7 +128,7 @@ Memory Record TLV
 |       *0x00        | String Name
 ----------------------
 
-Memory Record's will always be appended with a string TLV for the binary absolute path if one 
+Memory Record's will always be appended with a string TLV for the binary absolute path if one
 exists.
 */
 typedef struct mem_rec_struct
@@ -150,7 +150,7 @@ typedef struct mem_rec_struct
 Register Record TLV
 
 ----------------------
-|       0x0002       | Type 
+|       0x0002       | Type
 ----------------------
 | 0x0000000000000000 | Length
 ----------------------
@@ -166,10 +166,10 @@ typedef struct reg_rec_struct
     void *usr_reg;
 } reg_rec_t;
 
-/* 
-arch = x86_64 
+/*
+arch = x86_64
 */
-typedef struct user_regs_struct_x86_64 
+typedef struct user_regs_struct_x86_64
 {
     uint64_t r15;
     uint64_t r14;
@@ -209,21 +209,19 @@ typedef struct pzl_ctx_struct
     hdr_rec_t hdr_rec;
     mem_rec_t *mem_rec;
     reg_rec_t *reg_rec;
-    bool pkd;
-    uint8_t *pkd_dat; 
 } pzl_ctx_t;
 
 /* Function prototypes */
 bool pzl_init(pzl_ctx_t **context, arch_t arch);
 bool pzl_free(pzl_ctx_t *context);
 bool pzl_create_mem_rec(pzl_ctx_t *context,
-                           uint64_t start,
-                           uint64_t end,
-                           uint64_t size,
-                           uint8_t perms,
-                           uint64_t str_size,
-                           uint8_t *dat,
-                           uint8_t *str);
+                        uint64_t start,
+                        uint64_t end,
+                        uint64_t size,
+                        uint8_t perms,
+                        uint8_t *dat,
+                        uint64_t str_size,
+                        uint8_t *str);
 bool pzl_append_mem_rec(pzl_ctx_t *context, mem_rec_t *mem_rec);
 bool pzl_free_mem_rec(mem_rec_t *mem_rec);
 bool pzl_create_reg_rec(pzl_ctx_t *context, void *reg_rec);
@@ -232,12 +230,13 @@ uint64_t pzl_get_hdr_size(pzl_ctx_t *context);
 uint64_t pzl_get_mem_size(pzl_ctx_t *context);
 uint64_t pzl_get_reg_size(pzl_ctx_t *context);
 uint64_t pzl_get_usr_reg_size(pzl_ctx_t *context);
-bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size);
+bool pzl_pack(pzl_ctx_t *context, uint8_t *data, uint64_t *size);
 bool pzl_pack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset);
 bool pzl_pack_cmp_dat(uint8_t *cmp_data, uint8_t *data, uint64_t *offset, uint64_t size);
+uint64_t pzl_pack_size(pzl_ctx_t *context);
 bool pzl_unpack(pzl_ctx_t *context, uint8_t *data, uint64_t size);
 bool pzl_unpack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
 bool pzl_unpack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);

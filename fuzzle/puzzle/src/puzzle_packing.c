@@ -10,7 +10,7 @@
 /***************************************************************/
 /*                           PACKING                           */
 /***************************************************************/
-bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size)
+bool pzl_pack(pzl_ctx_t *context, uint8_t *data, uint64_t *size)
 {
     CHECK_PTR(context, "pzl_pack - context");
     CHECK_PTR(size, "pzl_pack - size");
@@ -25,7 +25,7 @@ bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size)
     uint64_t offset = 0;
 
     /* Cumulative size */
-    *size = 0; 
+    *size = 0;
     *size += mgc_size; /* Magic bytes */
     *size += hdr_size; /* Header record */
 
@@ -71,27 +71,15 @@ bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size)
     /* Calculate size */
     *size += cmp_size; /* Compressed data */
 
-    /* Allocate data buffer */
-    (*data) = (uint8_t *) malloc(*size);
-    if((*data) == NULL)
-    {
-        printf("pzl_pack: cannot allocate space for data buffer\n");
-        free(cmp_data);
-        cmp_data = NULL;
-        return false;
-    }
-    context->pkd = true;
-
     /* Pack data */
     offset = 0;
-    pzl_pack_mgc(context, (*data), &offset);
-    pzl_pack_hdr_rec(context, (*data), &offset);
-    pzl_pack_cmp_dat(cmp_data, (*data), &offset, cmp_size);
-    context->pkd_dat = (*data);
+    pzl_pack_mgc(context, data, &offset);
+    pzl_pack_hdr_rec(context, data, &offset);
+    pzl_pack_cmp_dat(cmp_data, data, &offset, cmp_size);
 
     /* Clean up */
     free(cmp_data);
-    cmp_data = NULL;    
+    cmp_data = NULL;
 
     return true;
 }
@@ -100,7 +88,7 @@ bool pzl_pack(pzl_ctx_t *context, uint8_t **data, uint64_t *size)
 bool pzl_pack_mgc(pzl_ctx_t *context, uint8_t *data, uint64_t *offset)
 {
     CHECK_PTR(context, "pzl_pack_mgc - context");
-    
+
     memcpy(data + *offset, context->mgc, sizeof(context->mgc));
     *offset += sizeof(context->mgc);
 
@@ -192,7 +180,7 @@ bool pzl_pack_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset)
         cur_mem_rec = cur_mem_rec->next;
     }
 
-    return true;    
+    return true;
 }
 
 /* Pack register record */
@@ -211,8 +199,8 @@ bool pzl_pack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset)
     *offset += sizeof(context->reg_rec->length);
 
     /* User registers size */
-    memcpy(data + *offset, 
-           &(context->reg_rec->usr_reg_len), 
+    memcpy(data + *offset,
+           &(context->reg_rec->usr_reg_len),
            sizeof(context->reg_rec->usr_reg_len));
     *offset += sizeof(context->reg_rec->usr_reg_len);
 
@@ -231,6 +219,20 @@ bool pzl_pack_cmp_dat(uint8_t *cmp_data, uint8_t *data, uint64_t *offset, uint64
     memcpy(data + *offset, cmp_data, size);
     *offset += size;
     return true;
+}
+
+uint64_t pzl_pack_size(pzl_ctx_t *context)
+{
+  CHECK_PTR(context, "pzl_pack_size - context");
+
+  /* Cummulative size */
+  uint64_t cum_size = 0;
+  cum_size += pzl_get_mgc_size(context);
+  cum_size += pzl_get_hdr_size(context);
+  cum_size += compressBound(pzl_get_mem_size(context) + \
+                            pzl_get_reg_size(context));
+
+  return cum_size;
 }
 
 /***************************************************************/
@@ -282,7 +284,7 @@ bool pzl_unpack(pzl_ctx_t *context, uint8_t *data, uint64_t size)
         cmp_data = NULL;
         return false;
     }
- 
+
     /* Uncompress */
     cmp_status = uncompress(uncmp_data, &(context->hdr_rec.data_size), cmp_data, size - offset);
     if(cmp_status != Z_OK)
@@ -353,7 +355,7 @@ bool pzl_unpack_hdr_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uin
     CHECK_PTR(data, "pzl_unpack_hdr_rec - data");
     CHECK_PTR(offset, "pzl_unpack_hdr_rec - offset");
     CHECK_SIZE(size, *offset, (2 + 8 + 2 + 4 + 8), "pzl_unpack_hdr_rec - data");
-    
+
     /* Check type */
     if(strncmp((const char *) (data + *offset), "\x00\x00", 2) != 0)
     {
@@ -502,8 +504,8 @@ bool pzl_unpack_sgl_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset,
                           mem_end,
                           mem_size,
                           mem_perms,
-                          mem_str_len,
                           mem_data,
+                          mem_str_len,
                           mem_str) == false)
     {
         printf("pzl_unpack_sgl_mem_rec: cannot create memory record\n");
