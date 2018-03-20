@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
         name = 'fuzzle',
-        version = '0.0.2',
+        version = '0.0.3',
         description = 'a tool set and framework to enhance emedded and unique fuzzing',
         author = 'JeffJerseyCow',
         author_email = 'jeffjerseycow@gmail.com',

@@ -28,7 +28,7 @@ def main(duzzle=DuzzleContext()):
                         help='Target architecture [x86_64]')
     parser.add_argument('--breakpoint', '-b', required=True, help='Location to insert break')
     parser.add_argument('--verbose', '-v', action='store_true', help='Enable verbosity')
-    parser.add_argument('--version', action='version', version='0.0.2')
+    parser.add_argument('--version', action='version', version='0.0.3')
     args = parser.parse_args()
 
     # Clean up args
