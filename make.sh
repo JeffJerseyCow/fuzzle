@@ -4,9 +4,9 @@ FZL_DIR="`dirname ${0}`"
 FZL_PATH="`realpath ${FZL_DIR}`"
 FZL_BUILD_PATH="${FZL_PATH}/fuzzle/pypzl/build"
 
-build() 
+build()
 {
-    mkdir "${FZL_BUILD_PATH}"
+    mkdir "${FZL_BUILD_PATH}" &> /dev/null
     cd "${FZL_BUILD_PATH}"
     cmake "${PZL_PATH}"
     make
@@ -18,10 +18,16 @@ install()
     pip3 install . --upgrade
 }
 
-default() 
+default()
 {
     build
     install
+}
+
+clean()
+{
+    rm -rf "${FZL_BUILD_PATH}" &> /dev/null
+    pip uninstall fuzzle -y
 }
 
 case $1 in
@@ -29,4 +35,6 @@ case $1 in
     "" ) default ;;
     # Build
     "build" ) build ;;
+    # Clean
+    "clean" ) clean ;;
 esac

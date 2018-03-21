@@ -13,6 +13,8 @@
 bool pzl_pack(pzl_ctx_t *context, uint8_t *data, uint64_t *size)
 {
     CHECK_PTR(context, "pzl_pack - context");
+    CHECK_PTR(context->mem_rec, "pzl_pack - context->mem_rec");
+    CHECK_PTR(context->reg_rec, "pzl_pack - context->reg_rec");
     CHECK_PTR(size, "pzl_pack - size");
 
     /* Locals */

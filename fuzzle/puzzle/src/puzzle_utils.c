@@ -6,7 +6,7 @@
 uint64_t pzl_get_mgc_size(pzl_ctx_t *context)
 {
     CHECK_PTR(context, "pzl_get_mgc_size - context");
-    
+
     return (3);
 }
 
@@ -14,7 +14,7 @@ uint64_t pzl_get_mgc_size(pzl_ctx_t *context)
 uint64_t pzl_get_hdr_size(pzl_ctx_t *context)
 {
     CHECK_PTR(context, "pzl_get_hdr_size - context");
-    
+
     return context->hdr_rec.length;
 }
 
@@ -29,7 +29,7 @@ uint64_t pzl_get_mem_size(pzl_ctx_t *context)
     uint64_t cum_size = 0;
     mem_rec_t *mem_rec = context->mem_rec;
     while(mem_rec != NULL)
-    { 
+    {
         cum_size += mem_rec->length;
         mem_rec = mem_rec->next;
     }
