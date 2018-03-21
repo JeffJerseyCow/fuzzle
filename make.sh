@@ -26,7 +26,7 @@ default()
 
 clean()
 {
-    rm -rf "${FZL_BUILD_PATH}" &> /dev/null
+    rm -r "${FZL_BUILD_PATH}"
     pip uninstall fuzzle -y
 }
 
