@@ -68,6 +68,11 @@ int main(int argc, char **argv, char **envp)
     /* Unpack */
     pzl_ctx_t *context;
     pzl_init(&context, UNKN_ARCH);
+    if(context == false)
+    {
+      printf("Cannot initialise context\n");
+      return false;
+    }
 
     /* Test */
     pzl_unpack(context, in_data, bytes_read);
@@ -84,6 +89,13 @@ int main(int argc, char **argv, char **envp)
         "MIPS_32",
         "UNKN_ARCH"
     };
+
+    /* Check architecture range */
+    if(context->hdr_rec.arch >= (sizeof(arch_str)/sizeof(arch_str[0])))
+    {
+        printf("[*] Unknown arch\n");
+        goto cleanup;
+    }
 
     printf("Architecture: %s\n", arch_str[context->hdr_rec.arch]);
     printf("Data size: %lu\n", context->hdr_rec.data_size);
@@ -112,6 +124,16 @@ int main(int argc, char **argv, char **envp)
 
     printf("--- Register record ---\n");
     user_regs_x86_64_t usr_reg;
+    CHECK_PTR_DO(context,
+                 "unpack_test - context",
+                 goto cleanup;);
+    CHECK_PTR_DO(context->reg_rec,
+                 "unpack_test - context->reg_reg",
+                 goto cleanup;);
+    CHECK_PTR_DO(context->reg_rec->usr_reg,
+                 "unpack_test - context->reg_rec->usr_reg",
+                 goto cleanup;);
+
     memcpy(&usr_reg, context->reg_rec->usr_reg, context->reg_rec->usr_reg_len);
     printf("r15: %p\n", (void *) usr_reg.r15);
     printf("r14: %p\n", (void *) usr_reg.r14);
@@ -142,6 +164,7 @@ int main(int argc, char **argv, char **envp)
     printf("gs: %p\n", (void *) usr_reg.gs);
 
     /* Free library */
+    cleanup:
     pzl_free(context);
     free(in_data);
     in_data = NULL;
