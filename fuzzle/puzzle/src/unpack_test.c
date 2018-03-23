@@ -75,7 +75,11 @@ int main(int argc, char **argv, char **envp)
     }
 
     /* Test */
-    pzl_unpack(context, in_data, bytes_read);
+    if(pzl_unpack(context, in_data, bytes_read) == false)
+    {
+      printf("Cannot unpack data\n");
+      goto cleanup;
+    }
 
     /* Print architecture */
     const char *arch_str[] = {
