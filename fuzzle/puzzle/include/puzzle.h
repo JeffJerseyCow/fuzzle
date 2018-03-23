@@ -18,14 +18,6 @@
         return false; \
     }
 
-#define CHECK_PTR_DO(__ptr, __msg, __act) \
-    if(__ptr == NULL) \
-    { \
-        printf("%s: has not been allocated\n", __msg); \
-        __act \
-    }
-
-
 #define CHECK_SIZE(__size, __offset, __value, __msg) \
     if((__size <= 0)) \
     { \

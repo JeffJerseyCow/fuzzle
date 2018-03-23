@@ -128,15 +128,6 @@ int main(int argc, char **argv, char **envp)
 
     printf("--- Register record ---\n");
     user_regs_x86_64_t usr_reg;
-    CHECK_PTR_DO(context,
-                 "unpack_test - context",
-                 goto cleanup;);
-    CHECK_PTR_DO(context->reg_rec,
-                 "unpack_test - context->reg_reg",
-                 goto cleanup;);
-    CHECK_PTR_DO(context->reg_rec->usr_reg,
-                 "unpack_test - context->reg_rec->usr_reg",
-                 goto cleanup;);
 
     memcpy(&usr_reg, context->reg_rec->usr_reg, context->reg_rec->usr_reg_len);
     printf("r15: %p\n", (void *) usr_reg.r15);
