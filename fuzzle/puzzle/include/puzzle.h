@@ -95,6 +95,8 @@ Header TLV
 ----------------------
 |       0x0000       | Arch
 ----------------------
+| 0x0000000000000000 | Data Size
+----------------------
 */
 typedef struct hdr_struct
 {
@@ -175,29 +177,29 @@ typedef struct user_regs_struct_x86_64
     uint64_t r14;
     uint64_t r13;
     uint64_t r12;
-    uint64_t bp;
-    uint64_t bx;
+    uint64_t rbp;
+    uint64_t rbx;
     uint64_t r11;
     uint64_t r10;
     uint64_t r9;
     uint64_t r8;
-    uint64_t ax;
-    uint64_t cx;
-    uint64_t dx;
-    uint64_t si;
-    uint64_t di;
-    uint64_t orig_ax;
-    uint64_t ip;
+    uint64_t rax;
+    uint64_t rcx;
+    uint64_t rdx;
+    uint64_t rsi;
+    uint64_t rdi;
+    uint64_t orig_rax;
+    uint64_t rip;
     uint64_t cs;
-    uint64_t flags;
-    uint64_t sp;
+    uint64_t eflags;
+    uint64_t rsp;
     uint64_t ss;
     uint64_t fs_base;
     uint64_t gs_base;
     uint64_t ds;
     uint64_t es;
     uint64_t fs;
-    uint64_t guser_regss;
+    uint64_t gs;
 } user_regs_x86_64_t;
 
 /*

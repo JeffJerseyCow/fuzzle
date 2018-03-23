@@ -1,5 +1,8 @@
 import os
 import re
+import tempfile
+
+from fuzzle import pypzl
 
 
 def dprint(msg, verbose):
@@ -10,12 +13,12 @@ def dprint(msg, verbose):
         msg: Message string to print.
         verbose: Boolean verbosity flag.
     """
-    if verbose: 
+    if verbose:
         print(msg)
-    
+
 def file_path(pid, file_name):
     """
-    Create directory if it doesn't exists and return full file path. 
+    Create directory if it doesn't exists and return full file path.
 
     Args:
         pid: pid of the process to use as directory name.
@@ -24,9 +27,9 @@ def file_path(pid, file_name):
     Returns:
         Absolute path to requested file name.
     """
-    
+
     # Check directory exists
-    path = os.path.join(os.getcwd(), 'duzzle_{}'.format(pid))
+    path = os.path.join(tempfile.gettempdir(), 'duzzle_{}'.format(pid))
     os.makedirs(path, exist_ok=True)
 
     return os.path.join(path, file_name)
@@ -61,7 +64,22 @@ def parse_map(file_name):
                 segment['start'] = '0x{}'.format(addr_match.group(1))
                 segment['end'] = '0x{}'.format(addr_match.group(2))
                 segment['size'] = int(addr_match.group(2), 16) - int(addr_match.group(1), 16)
-                segment['permissions'] = addr_match.group(3)
+
+                str_perms = addr_match.group(3)
+                perms = 0
+                # Check read
+                if 'r' in str_perms:
+                    perms = perms | pypzl.READ
+
+                # Check write
+                if 'w' in str_perms:
+                    perms = perms | pypzl.WRITE
+
+                # Check execute
+                if 'x' in str_perms:
+                    perms = perms | pypzl.EXECUTE
+
+                segment['perms'] = perms
 
                 # Extract name if exists
                 fields = list(filter(lambda x: x != '', line.split(' ')))
@@ -74,3 +92,29 @@ def parse_map(file_name):
                 maps.append(segment)
 
     return maps
+
+def read_file_bytes(file_path):
+    """
+    """
+
+    # Efficently read
+    data_byte_array = bytearray(read_file(file_path))
+    data_bytes = bytes(data_byte_array)
+    return data_bytes
+
+def read_file(file_path):
+    """
+    """
+
+    # Read file as bytes
+    with open(file_path, 'rb') as file:
+        while True:
+            data_bytes = file.read(1024)
+
+            # EOF
+            if not data_bytes:
+                break
+
+            # Read chunk
+            for byte in data_bytes:
+                yield byte

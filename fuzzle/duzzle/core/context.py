@@ -102,7 +102,7 @@ class DuzzleContext(object):
 
         Returns:
             gdbmi response otherwise raises an exception.
-        """ 
+        """
 
         # Connect to gdbserver
         resp = self.write('-target-select remote {}:{}'.format(address, port))
@@ -153,7 +153,7 @@ class DuzzleContext(object):
 
                     # Set PID
                     self.pid = resp['payload']['pid']
-                   
+
                     # Debug
                     utils.dprint('[+] Process PID "{}"'.format(self.pid), self._verbose)
 
@@ -177,7 +177,7 @@ class DuzzleContext(object):
                     return resp
 
                 # Release lock
-                self._in_q.task_done() 
+                self._in_q.task_done()
 
     def wait(self, reason):
         """
@@ -198,7 +198,7 @@ class DuzzleContext(object):
                 if resp['message'] == 'stopped' and \
                    'reason' in resp['payload'] and \
                    resp['payload']['reason'] == reason:
-                    
+
                     return resp
 
         # Read in_q
@@ -270,7 +270,7 @@ class DuzzleContext(object):
         resp = self.write('-target-file-get {} {}'.format(src_file, dst_file))
         if resp['message'] != 'done':
             raise Exception('Cannot download file "{}"'.format(src_file))
-        
+
         # Wait for file
         while True:
             if os.path.isfile(dst_file):
@@ -298,7 +298,7 @@ class DuzzleContext(object):
     def dump_segment(self, segment):
         """
         Dumps a memory segment from the inferior process to local file.
-        
+
         Args:
             segment: Segment to dump in duzzle format.
 
@@ -307,7 +307,7 @@ class DuzzleContext(object):
         """
 
         # Dump file handle
-        dump_file_name = '{}.{}'.format(segment['start'], segment['permissions'])
+        dump_file_name = '{}.{}'.format(segment['start'], segment['perms'])
         dump_file_name = utils.file_path(self.pid, dump_file_name)
 
         # Dump command
@@ -340,15 +340,7 @@ class DuzzleContext(object):
         # Extract architecture specific registers
         self._registers.update(self._arch.dump_registers(self))
 
-        # Dump json
-        json_out = json.dumps(self._registers, sort_keys=True, indent=4, separators=(',', ': '))
-
-        # Write to file
-        out_file_name = utils.file_path(self.pid, 'regs.json')
-        with open(out_file_name, 'w') as file:
-            file.write(json_out)
-
-        return out_file_name
+        return self._registers
 
     def _dump_registers_name(self):
         """
@@ -370,7 +362,7 @@ class DuzzleContext(object):
         Extract register values.
 
         Returns:
-            Dictionary indexed by register number containing its value otherwise raises an 
+            Dictionary indexed by register number containing its value otherwise raises an
             exception.
         """
 
@@ -407,7 +399,7 @@ class DuzzleContext(object):
     def read_bytes(self, address, count):
         """
         Read memory bytes from a target address.
-        
+
         Args:
             address: Abolute address to being reading bytes.
             count: Byte count to read.

@@ -1,7 +1,53 @@
 import struct
 
+from fuzzle import pypzl
 from fuzzle.duzzle.core import utils
 
+
+# Set architecture
+ARCH = pypzl.X86_64
+
+def pack(user_regs):
+    """
+    Pack x86_64 registers into bytes object.
+
+    Args:
+        user_regs: A dictionary of dumped user registers.
+
+    Returns:
+        A bytes object packed in the puzzle format.
+    """
+
+    # Pack x86_64 registers
+    user_regs_data = struct.pack('<Q', int(user_regs['r15'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['r14'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['r13'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['r12'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rbp'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rbx'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['r11'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['r10'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['r9'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['r8'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rax'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rcx'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rdx'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rsi'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rdi'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['orig_rax'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rip'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['cs'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['eflags'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['rsp'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['ss'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['fs_base'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['gs_base'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['ds'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['es'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['fs'], 16))
+    user_regs_data += struct.pack('<Q', int(user_regs['gs'], 16))
+
+    return user_regs_data
 
 def dump_registers(duzzle):
     """
@@ -13,7 +59,7 @@ def dump_registers(duzzle):
     Returns:
         A name address dictionary containing the fs_base and gs_base.
     """
-    
+
     # Regiters dictionary
     registers = {}
 
@@ -52,7 +98,7 @@ def _get_base(duzzle, code):
     data = duzzle.read_bytes(hex(pointer_addr), 8)
 
     # Set registers for syscall
-    duzzle.write_register('rax', '0x9e') # Syscall number 
+    duzzle.write_register('rax', '0x9e') # Syscall number
     duzzle.write_register('rdi', code) # Code
     duzzle.write_register('rsi', hex(pointer_addr)) # Pointer address
     duzzle.write_register('rip', hex(syscall_addr)) # Set instruction pointer
@@ -91,7 +137,8 @@ def _pointer_addr(duzzle):
     """
 
     # Extract writable segments
-    segments = list(filter(lambda x: 'w' in x['permissions'], duzzle._segments))
+    segments = list(filter(lambda x: (x['perms'] & pypzl.WRITE != 0),
+                                     duzzle._segments))
 
     # Get first address
     return int(segments[0]['start'], 16)
@@ -108,7 +155,8 @@ def _syscall_addr(duzzle):
     """
 
     # Extract executable segments
-    segments = list(filter(lambda x: 'x' in x['permissions'], duzzle._segments))
+    segments = list(filter(lambda x: (x['perms'] & pypzl.EXECUTE != 0),
+                                     duzzle._segments))
 
     # Locate syscall gadget
     for segment in segments:
@@ -119,7 +167,7 @@ def _syscall_addr(duzzle):
 
         # File path
         file_path = utils.file_path(duzzle.pid, '{}.{}'.format(segment['start'],
-                                                               segment['permissions']))
+                                                               segment['perms']))
         # Open raw dump
         with open(file_path, 'rb') as file:
             data = file.read()

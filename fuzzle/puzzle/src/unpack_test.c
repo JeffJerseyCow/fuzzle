@@ -113,9 +113,33 @@ int main(int argc, char **argv, char **envp)
     printf("--- Register record ---\n");
     user_regs_x86_64_t usr_reg;
     memcpy(&usr_reg, context->reg_rec->usr_reg, context->reg_rec->usr_reg_len);
-    printf("RAX: %p\n", (void *) usr_reg.ax);
-    printf("RBX: %p\n", (void *) usr_reg.bx);
-    printf("RCX: %p\n", (void *) usr_reg.cx);
+    printf("r15: %p\n", (void *) usr_reg.r15);
+    printf("r14: %p\n", (void *) usr_reg.r14);
+    printf("r13: %p\n", (void *) usr_reg.r13);
+    printf("r12: %p\n", (void *) usr_reg.r12);
+    printf("rbp: %p\n", (void *) usr_reg.rbp);
+    printf("rbx: %p\n", (void *) usr_reg.rbx);
+    printf("r11: %p\n", (void *) usr_reg.r11);
+    printf("r10: %p\n", (void *) usr_reg.r10);
+    printf("r9: %p\n", (void *) usr_reg.r9);
+    printf("r8: %p\n", (void *) usr_reg.r8);
+    printf("rax: %p\n", (void *) usr_reg.rax);
+    printf("rcx: %p\n", (void *) usr_reg.rcx);
+    printf("rdx: %p\n", (void *) usr_reg.rdx);
+    printf("rsi: %p\n", (void *) usr_reg.rsi);
+    printf("rdi: %p\n", (void *) usr_reg.rdi);
+    printf("orig_rax: %p\n", (void *) usr_reg.orig_rax);
+    printf("rip: %p\n", (void *) usr_reg.rip);
+    printf("cs: %p\n", (void *) usr_reg.cs);
+    printf("eflags: %p\n", (void *) usr_reg.eflags);
+    printf("rsp: %p\n", (void *) usr_reg.rsp);
+    printf("ss: %p\n", (void *) usr_reg.ss);
+    printf("fs_base: %p\n", (void *) usr_reg.fs_base);
+    printf("gs_base: %p\n", (void *) usr_reg.gs_base);
+    printf("ds: %p\n", (void *) usr_reg.ds);
+    printf("es: %p\n", (void *) usr_reg.es);
+    printf("fs: %p\n", (void *) usr_reg.fs);
+    printf("gs: %p\n", (void *) usr_reg.gs);
 
     /* Free library */
     pzl_free(context);

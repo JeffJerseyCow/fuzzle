@@ -14,6 +14,8 @@ build()
 
 install()
 {
+    touch ${FZL_BUILD_PATH}/__init__.py
+    touch ${FZL_BUILD_PATH}/lib/__init__.py
     cd ${FZL_PATH}
     pip3 install . --upgrade
 }

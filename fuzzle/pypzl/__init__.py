@@ -14,6 +14,11 @@ MIPS_64 = 6
 MIPS_32 = 7
 UNKN_ARCH = 8
 
+# Permissions
+READ = 0x04
+WRITE = 0x02
+EXECUTE = 0x01
+
 # Main class
 class PuzzleContext(object):
     """
