@@ -9,3 +9,10 @@ The frame work and tools are split like so.
 - duzzle remotely dumps a process via GDB's MI --- machine interface.
 - buzzle converts the process dump to a fully working binary, execution will resume where ever the state was saved.
 - uuzzle wraps the binary in the unicorn frame work in a way that's ready for fuzzing.
+
+## Requirements
+- cmake
+- python3
+- python3-pip
+
+I’d advise you use a python virtual environment and install everything from there – I’m not going to support the project in any other form apart from an eventual Docker image.
