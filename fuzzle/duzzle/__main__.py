@@ -40,7 +40,7 @@ def main(duzzle=DuzzleContext()):
                         '-v',
                         action='store_true',
                         help='Enable verbosity')
-    parser.add_argument('--version', action='version', version='0.0.5')
+    parser.add_argument('--version', action='version', version='0.0.6')
     args = parser.parse_args()
 
     # Clean up args
@@ -110,7 +110,7 @@ def main(duzzle=DuzzleContext()):
     user_regs = duzzle.dump_registers()
     print('[*] Dumped user registers')
 
-    duzzle.disconnect()
+    # Shutdown
     duzzle.shutdown()
 
     # Pack

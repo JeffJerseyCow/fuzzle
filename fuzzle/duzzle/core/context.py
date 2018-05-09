@@ -39,6 +39,7 @@ class DuzzleContext(object):
         self._stopped = []
         self._segments = {}
         self._registers = {}
+        self._name_list = []
         self._in_q = Queue()
         self._out_q = Queue()
         self._verbose = verbose
@@ -108,20 +109,6 @@ class DuzzleContext(object):
         resp = self.write('-target-select remote {}:{}'.format(address, port))
         if resp['message'] != 'connected':
             raise Exception('Cannot connect to target "{}:{}"'.format(address, port))
-
-        return resp
-
-    def disconnect(self):
-        """
-        Issues the remote target detach command.
-
-        Returns:
-            gdbmi response otherwise raises an exception.
-        """
-
-        resp = self.write('-target-detach')
-        if resp['message'] != 'done':
-            raise Exception('Cannot detach from target')
 
         return resp
 
@@ -330,7 +317,7 @@ class DuzzleContext(object):
             File path of JSON dump file otherwise raises an exception.
         """
 
-        name_list = self._dump_registers_name()
+        self._name_list = name_list = self._dump_registers_name()
         value_dict = self._dump_registers_value()
 
         # Create register dictionary
@@ -373,7 +360,12 @@ class DuzzleContext(object):
         # Create register value dictionary
         reg_dict = {}
         for reg in resp['payload']['register-values']:
-            reg_dict[int(reg['number'])] = reg['value']
+            try:
+                reg_dict[int(reg['number'])] = reg['value']
+            except KeyError as e:
+                print('[-] Cannot read register "{}"'.format(self._name_list[
+                                                             int(reg['number'])
+                                                             ]))
 
         return reg_dict
 
