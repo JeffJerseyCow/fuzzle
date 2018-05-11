@@ -34,8 +34,9 @@ class PuzzleContext(object):
         """
 
         # Get file location
-        pypzl_dir = os.path.abspath(os.path.dirname(__file__))
-        libpuzzle_path = os.path.join(pypzl_dir, 'build', 'lib', 'libpuzzle.so')
+        user_home = os.path.expanduser('~')
+        fuzzle_dir = os.path.join(os.path.abspath(user_home), '.fuzzle')
+        libpuzzle_path = os.path.join(fuzzle_dir, 'lib', 'libpuzzle.so')
 
         # Load Puzzle library
         try:

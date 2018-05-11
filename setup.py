@@ -8,8 +8,6 @@ setup(
         author_email = 'jeffjerseycow@gmail.com',
         url = 'https://github.com/JeffJerseyCow/fuzzle',
         packages = find_packages(),
-        package_data = {'': ['libpuzzle.so']},
-        include_package_data = True,
         install_requires = ['pygdbmi>=0.8.2.0'],
         entry_points = {'console_scripts':['duzzle = fuzzle.duzzle.__main__:main']},
 )

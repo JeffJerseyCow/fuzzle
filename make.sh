@@ -1,21 +1,23 @@
-PZL_DIR="`dirname ${0}`/fuzzle/puzzle"
+PZL_DIR="`dirname ${0}`/fuzzle/puzzle/"
 PZL_PATH="`realpath ${PZL_DIR}`"
 FZL_DIR="`dirname ${0}`"
 FZL_PATH="`realpath ${FZL_DIR}`"
-FZL_BUILD_PATH="${FZL_PATH}/fuzzle/pypzl/build"
+PZL_BUILD_PATH="${FZL_PATH}/fuzzle/puzzle/build/"
+PZL_INSTALL_PATH="${HOME}/.fuzzle/"
 
 build()
 {
-    mkdir "${FZL_BUILD_PATH}" &> /dev/null
-    cd "${FZL_BUILD_PATH}"
-    cmake "${PZL_PATH}"
+    # Compile puzzle
+    mkdir "${PZL_BUILD_PATH}" &> /dev/null
+    cd "${PZL_BUILD_PATH}"
+    cmake "${PZL_PATH}" -DCMAKE_INSTALL_PREFIX=${PZL_INSTALL_PATH}
     make
 }
 
 install()
 {
-    touch ${FZL_BUILD_PATH}/__init__.py
-    touch ${FZL_BUILD_PATH}/lib/__init__.py
+    cd "${PZL_BUILD_PATH}"
+    make install
     cd ${FZL_PATH}
     pip3 install . --upgrade
 }
@@ -28,7 +30,8 @@ default()
 
 clean()
 {
-    rm -r "${FZL_BUILD_PATH}"
+    rm -r "${PZL_BUILD_PATH}"
+    rm -r "${PZL_INSTALL_PATH}"
     pip uninstall fuzzle -y
 }
 
