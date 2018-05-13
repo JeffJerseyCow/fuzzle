@@ -1,9 +1,0 @@
-# Folders
-*build/
-/dist
-/*.egg-info
-# Files
-*.pyc
-*.tags
-*.tags_sorted_by_file
-

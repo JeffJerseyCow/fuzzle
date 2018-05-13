@@ -109,7 +109,9 @@ Register Record TLV
 ----------------------
 | 0x0000000000000000 | Length
 ----------------------
-|   usr_reg_struct   | Registers
+| 0x0000000000000000 | User Register Length
+----------------------
+|       *0x00        | User Registers
 ----------------------
 */
 

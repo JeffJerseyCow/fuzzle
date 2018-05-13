@@ -1,37 +1,57 @@
-PZL_DIR="`dirname ${0}`/fuzzle/puzzle/"
-PZL_PATH="`realpath ${PZL_DIR}`"
+#!/usr/bin/env bash
 FZL_DIR="`dirname ${0}`"
 FZL_PATH="`realpath ${FZL_DIR}`"
+FZL_INSTALL_PATH="${HOME}/.fuzzle/"
+PZL_DIR="`dirname ${0}`/fuzzle/puzzle/"
+PZL_PATH="`realpath ${PZL_DIR}`"
 PZL_BUILD_PATH="${FZL_PATH}/fuzzle/puzzle/build/"
-PZL_INSTALL_PATH="${HOME}/.fuzzle/"
+UZL_DIR="`dirname ${0}`/fuzzle/uuzzle"
+UZL_PATH=`realpath ${UZL_DIR}`
+UZL_BUILD_PATH="${FZL_PATH}/fuzzle/uuzzle/build"
 
-build()
+build_puzzle()
 {
     # Compile puzzle
     mkdir "${PZL_BUILD_PATH}" &> /dev/null
     cd "${PZL_BUILD_PATH}"
-    cmake "${PZL_PATH}" -DCMAKE_INSTALL_PREFIX=${PZL_INSTALL_PATH}
+    cmake "${PZL_PATH}" -DCMAKE_INSTALL_PREFIX=${FZL_INSTALL_PATH}
     make
 }
 
-install()
+build_uuzzle()
+{
+  # Compile uuzzle
+  mkdir "${UZL_BUILD_PATH}" &> /dev/null
+  cd "${UZL_BUILD_PATH}"
+  cmake "${UZL_PATH}" -DCMAKE_PREFIX_PATH=${FZL_INSTALL_PATH}
+  make
+}
+
+install_puzzle()
 {
     cd "${PZL_BUILD_PATH}"
     make install
-    cd ${FZL_PATH}
-    pip3 install . --upgrade
+}
+
+install_fuzzle()
+{
+  cd ${FZL_PATH}
+  pip3 install . --upgrade
 }
 
 default()
 {
-    build
-    install
+    build_puzzle
+    install_puzzle
+    build_uuzzle
+    install_fuzzle
 }
 
 clean()
 {
     rm -r "${PZL_BUILD_PATH}"
-    rm -r "${PZL_INSTALL_PATH}"
+    rm -r "${FZL_INSTALL_PATH}"
+    rm -r "${UZL_BUILD_PATH}"
     pip uninstall fuzzle -y
 }
 

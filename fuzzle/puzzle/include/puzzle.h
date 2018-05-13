@@ -60,7 +60,7 @@ The UZL format will eventually support 8 processor architectures and have the fo
    |         ----------------
    |         |     Name     | Optional String Name
    |         ----------------
-DEFLATE      | MEM_RECORD N | Memory Record
+(DE/IN)FLATE | MEM_RECORD N | Memory Record
    |         ----------------
    |         |     Data     |
    |         ----------------
@@ -130,8 +130,8 @@ Memory Record TLV
 |       *0x00        | String Name
 ----------------------
 
-Memory Record's will always be appended with a string TLV for the binary absolute path if one
-exists.
+Memory Record's will always be appended with a string TLV for the binary
+absolute path if one exists.
 */
 typedef struct mem_rec_struct
 {
@@ -156,7 +156,9 @@ Register Record TLV
 ----------------------
 | 0x0000000000000000 | Length
 ----------------------
-|   usr_reg_struct   | Registers
+| 0x0000000000000000 | User Register Length
+----------------------
+|       *0x00        | User Registers
 ----------------------
 */
 
@@ -247,7 +249,5 @@ bool pzl_unpack_sgl_mem_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset,
 bool pzl_unpack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
 bool pzl_unpack_reg_rec(pzl_ctx_t *context, uint8_t *data, uint64_t *offset, uint64_t size);
 bool pzl_unpack_cmp_dat(uint8_t **cmp_data, uint8_t *data, uint64_t *offset, uint64_t size);
-
-/* Compression */
 
 #endif
