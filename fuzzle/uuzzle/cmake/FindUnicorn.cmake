@@ -13,7 +13,6 @@ find_path(UNICORN_INCLUDE_DIR
           NAMES unicorn/unicorn.h
           HINTS ${PC_UNICORN_INCLUDEDIR} ${PC_UNICORN_INCLUDE_DIRS})
 
-
 find_library(UNICORN_LIBRARY
              NAMES libunicorn.so
              HINTS ${PC_UNICORN_LIBDIR} ${PC_UNICORN_LIBRARY_DIRS} )
