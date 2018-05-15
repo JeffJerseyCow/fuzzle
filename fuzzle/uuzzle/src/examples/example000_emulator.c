@@ -11,8 +11,6 @@
 #include <examples.h>
 #include <capstone.h>
 
-/* Definitions */
-#define __WITH_TRACE__
 
 #if defined __WITH_TRACE__
 /* Capston globals */
@@ -136,6 +134,14 @@ int main(int argc, char **argv, char **envp)
               1,
               0);
 #endif
+
+  /* Register syscalls */
+  uc_hook sys_hook;
+  if(!uzl_reg_sys(context, uc, &sys_hook))
+  {
+    printf("example000_emulator: cannot register syscalls\n");
+    goto error;
+  }
 
   /* Emulate */
   err = uc_emu_start(uc, uzl_get_pc(context), 0, 0, 0);

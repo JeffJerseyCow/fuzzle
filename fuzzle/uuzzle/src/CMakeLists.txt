@@ -8,9 +8,13 @@ set(LIBS ${LIBS}
 # Add library directories
 add_subdirectory(arch)
 set(LIBS ${LIBS}
-         x86_64)
+         arch_x86_64)
 
-# Add libraries
+add_subdirectory(syscalls)
+set(LIBS ${LIBS}
+         syscalls_linux_x86_64)
+
+# Add core
 add_library(core SHARED core.c)
 target_link_libraries(core ${LIBS})
 set(LIBS ${LIBS}

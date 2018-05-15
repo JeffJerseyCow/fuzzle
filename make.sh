@@ -27,6 +27,17 @@ build_uuzzle()
   make
 }
 
+build_uuzzle_trace()
+{
+  # Compile uuzzle
+  mkdir "${UZL_BUILD_PATH}" &> /dev/null
+  cd "${UZL_BUILD_PATH}"
+  cmake "${UZL_PATH}" \
+        -DCMAKE_PREFIX_PATH=${FZL_INSTALL_PATH} \
+        -DCMAKE_C_FLAGS="-D__WITH_TRACE__"
+  make
+}
+
 install_puzzle()
 {
     cd "${PZL_BUILD_PATH}"
@@ -47,6 +58,14 @@ default()
     install_fuzzle
 }
 
+trace()
+{
+  build_puzzle
+  install_puzzle
+  build_uuzzle_trace
+  install_fuzzle
+}
+
 clean()
 {
     rm -r "${PZL_BUILD_PATH}"
@@ -58,8 +77,8 @@ clean()
 case $1 in
     # Default
     "" ) default ;;
-    # Build
-    "build" ) build ;;
+    # Trace
+    "trace" ) trace ;;
     # Clean
     "clean" ) clean ;;
 esac

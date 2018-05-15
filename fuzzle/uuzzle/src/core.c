@@ -156,3 +156,25 @@ uint64_t uzl_get_pc(pzl_ctx_t *context)
       return false;
   }
 }
+
+/* Register syscall handlers */
+bool uzl_reg_sys(pzl_ctx_t *context, uc_engine *uc, uc_hook *sys_hook)
+{
+  switch(context->hdr_rec.arch)
+  {
+    case X86_64:
+      return uzl_reg_linux_x86_64_sys(context, uc, sys_hook);
+      break;
+    case X86_32:
+    case ARM:
+    case AARCH64:
+    case PPC_64:
+    case PPC_32:
+    case MIPS_64:
+    case MIPS_32:
+    case UNKN_ARCH:
+    default:
+      printf("uzl_reg_sys: unknown arch\n");
+      return false;
+  }
+}
