@@ -40,7 +40,7 @@ def main(duzzle=DuzzleContext()):
                         '-v',
                         action='store_true',
                         help='Enable verbosity')
-    parser.add_argument('--version', action='version', version='0.0.7')
+    parser.add_argument('--version', action='version', version='0.0.8')
     args = parser.parse_args()
 
     # Clean up args
