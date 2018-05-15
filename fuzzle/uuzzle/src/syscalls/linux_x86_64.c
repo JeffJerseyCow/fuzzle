@@ -7,24 +7,18 @@
 #include <stdbool.h>
 #include <linux_x86_64.h>
 
+
 /* Register linux x86_64 syscalls */
-bool uzl_reg_linux_x86_64_sys(pzl_ctx_t *context,
-                              uc_engine *uc,
-                              uc_hook *sys_hook)
+bool uzl_reg_linux_x86_64_sys(pzl_ctx_t *context, uc_engine *uc,
+                              uc_hook *sys_hook, uzl_options_t *opts)
 {
-  uc_hook_add(uc,
-              sys_hook,
-              UC_HOOK_INSN,
-              linux_x86_64_sys_hook_cb,
-              NULL,
-              1,
-              0,
-              UC_X86_INS_SYSCALL);
+  uc_hook_add(uc, sys_hook, UC_HOOK_INSN, linux_x86_64_sys_hook_cb,
+              (void *) opts, 1, 0, UC_X86_INS_SYSCALL);
   return true;
 }
 
 /* Syscall callback */
-void linux_x86_64_sys_hook_cb(uc_engine *uc, void *user_data)
+void linux_x86_64_sys_hook_cb(uc_engine *uc, void *usr_data)
 {
   linux_x86_64_sys_regs_t sys_regs;
 
@@ -41,7 +35,13 @@ void linux_x86_64_sys_hook_cb(uc_engine *uc, void *user_data)
   switch(sys_regs.rax)
   {
     case LINUX_X86_64_SYS_WRITE:
-      linux_x86_64_sys_write(uc, &sys_regs);
+      linux_x86_64_sys_write(uc, &sys_regs, (uzl_options_t *) usr_data);
+      break;
+    case LINUX_X86_64_SYS_CLONE:
+      linux_x86_64_sys_clone(uc, &sys_regs, (uzl_options_t *) usr_data);
+      break;
+    case LINUX_X86_64_SYS_FORK:
+      linux_x86_64_sys_fork(uc, &sys_regs, (uzl_options_t *) usr_data);
       break;
     default:
       return;
@@ -50,11 +50,14 @@ void linux_x86_64_sys_hook_cb(uc_engine *uc, void *user_data)
 
 /* Write syscall */
 void linux_x86_64_sys_write(uc_engine *uc,
-                            linux_x86_64_sys_regs_t *sys_regs)
+                            linux_x86_64_sys_regs_t *sys_regs,
+                            uzl_options_t *opts)
 {
   /* Emulate syscall */
   uint8_t *buf = calloc(1, sys_regs->rdx);
   uc_mem_read(uc, sys_regs->rsi, buf, sys_regs->rdx);
+
+  /* Write to stdout */
   printf("%s", buf);
 
   /* Return code*/
@@ -62,4 +65,26 @@ void linux_x86_64_sys_write(uc_engine *uc,
 
   /* Cleanup */
   free(buf);
+}
+
+/* Fork syscall */
+void linux_x86_64_sys_fork(uc_engine *uc,
+                          linux_x86_64_sys_regs_t *sys_regs,
+                          uzl_options_t *opts)
+{
+  /* Return code*/
+  if(opts->follow_child)
+    sys_regs->rax = 0;
+  uc_reg_write(uc, UC_X86_REG_RAX, &(sys_regs->rax));
+}
+
+/* Fork syscall */
+void linux_x86_64_sys_clone(uc_engine *uc,
+                           linux_x86_64_sys_regs_t *sys_regs,
+                           uzl_options_t *opts)
+{
+  /* Return code*/
+  if(opts->follow_child)
+    sys_regs->rax = 0;
+  uc_reg_write(uc, UC_X86_REG_RAX, &(sys_regs->rax));
 }

@@ -1,3 +1,4 @@
+#include <getopt.h>
 #include <stdint.h>
 #include <uuzzle.h>
 #include <puzzle.h>
@@ -158,12 +159,13 @@ uint64_t uzl_get_pc(pzl_ctx_t *context)
 }
 
 /* Register syscall handlers */
-bool uzl_reg_sys(pzl_ctx_t *context, uc_engine *uc, uc_hook *sys_hook)
+bool uzl_reg_sys(pzl_ctx_t *context, uc_engine *uc, uc_hook *sys_hook,
+                 uzl_options_t *opts)
 {
   switch(context->hdr_rec.arch)
   {
     case X86_64:
-      return uzl_reg_linux_x86_64_sys(context, uc, sys_hook);
+      return uzl_reg_linux_x86_64_sys(context, uc, sys_hook, opts);
       break;
     case X86_32:
     case ARM:
@@ -177,4 +179,53 @@ bool uzl_reg_sys(pzl_ctx_t *context, uc_engine *uc, uc_hook *sys_hook)
       printf("uzl_reg_sys: unknown arch\n");
       return false;
   }
+}
+
+/* Parse uuzzle arguments */
+bool uzl_parse_opts(uzl_options_t *opts, int argc, char **argv)
+{
+
+  /* Initialise defaults */
+  opts->verbose = false;
+  opts->follow_child = false;
+  opts->uzl_file_name = NULL;
+
+  /* Parse arguments */
+  int8_t c;
+  struct option long_options[] =
+  {
+    {"verbose", no_argument, 0, 'v'},
+    {"follow_child", no_argument, 0, 'f'},
+    {0, 0, 0, 0}
+  };
+
+  uint64_t option_index = 0;
+  while((c = getopt_long(argc, argv, "f", long_options,
+                        (int *) &option_index)) != -1)
+  {
+    switch(c)
+    {
+      case 'v':
+        opts->verbose = true;
+        break;
+      case 'f':
+        opts->follow_child = true;
+        break;
+    }
+  }
+
+  /* Get positional argument */
+  if(argc != optind + 1)
+  {
+    printf("uzl_parse_opts: incorrect argument count\n");
+    return false;
+  }
+  opts->uzl_file_name = argv[argc - 1];
+
+  /* Debug */
+  if(opts->verbose)
+    printf("verbosity enabled\n");
+
+  /* Cleanup */
+  return true;
 }

@@ -18,12 +18,20 @@ typedef struct linux_x86_64_sys_regs {
 
 /* Syscall table enum */
 enum linux_x86_64_sys_table {
-  LINUX_X86_64_SYS_WRITE = 0x01
+  LINUX_X86_64_SYS_WRITE = 0x01,
+  LINUX_X86_64_SYS_CLONE = 0x38,
+  LINUX_X86_64_SYS_FORK = 0x39
 };
 
 /* Prototypes */
 void linux_x86_64_sys_hook_cb(uc_engine *uc, void *user_data);
 void linux_x86_64_sys_write(uc_engine *uc,
-                            linux_x86_64_sys_regs_t *sys_regs);
-
+                            linux_x86_64_sys_regs_t *sys_regs,
+                            uzl_options_t *opts);
+void linux_x86_64_sys_fork(uc_engine *uc,
+                           linux_x86_64_sys_regs_t *sys_regs,
+                           uzl_options_t *opts);
+void linux_x86_64_sys_clone(uc_engine *uc,
+                            linux_x86_64_sys_regs_t *sys_regs,
+                            uzl_options_t *opts);                           
 #endif

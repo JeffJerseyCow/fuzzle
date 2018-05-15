@@ -23,10 +23,11 @@ int main(int argc, char **argv, char **envp)
 {
 
   /* Parse args */
-  if(argc != 2)
+  uzl_options_t opts;
+  if(!uzl_parse_opts(&opts, argc, argv))
   {
-      printf("example000_emulator: missing file argument\n");
-      return false;
+    printf("example000_emulator: cannot parse arguments\n");
+    return false;
   }
 
   /* Locals */
@@ -34,13 +35,14 @@ int main(int argc, char **argv, char **envp)
   int32_t ret;
 
   /* Stat */
-  ret = stat(argv[1], &statbuf);
+  ret = stat(opts.uzl_file_name, &statbuf);
   if(ret != 0 || S_ISDIR(statbuf.st_mode))
   {
-      printf("example000_emulator: cannot read file '%s'\n", argv[1]);
+      printf("example000_emulator: cannot read file '%s'\n",
+             opts.uzl_file_name);
       return false;
   }
-  const uint8_t *file_path = (uint8_t *) argv[1];
+  const uint8_t *file_path = (uint8_t *) opts.uzl_file_name;
   uint64_t file_size = statbuf.st_size;
   if(file_size < 1)
   {
@@ -137,7 +139,7 @@ int main(int argc, char **argv, char **envp)
 
   /* Register syscalls */
   uc_hook sys_hook;
-  if(!uzl_reg_sys(context, uc, &sys_hook))
+  if(!uzl_reg_sys(context, uc, &sys_hook, &opts))
   {
     printf("example000_emulator: cannot register syscalls\n");
     goto error;
