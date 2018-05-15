@@ -200,7 +200,7 @@ bool uzl_parse_opts(uzl_options_t *opts, int argc, char **argv)
   };
 
   uint64_t option_index = 0;
-  while((c = getopt_long(argc, argv, "f", long_options,
+  while((c = getopt_long(argc, argv, "fv", long_options,
                         (int *) &option_index)) != -1)
   {
     switch(c)
@@ -211,6 +211,8 @@ bool uzl_parse_opts(uzl_options_t *opts, int argc, char **argv)
       case 'f':
         opts->follow_child = true;
         break;
+      case '?':
+        return false;
     }
   }
 
