@@ -17,7 +17,7 @@ The framework and tools are split like so.
 - unicorn engine
 - capstone engine
 
-I’d advise you use a python virtual environment and install everything from there – I’m not going to support the project in any other form apart from an eventual Docker image.
+I advise you use a python virtual environment and install everything from there – I’m not going to support the project in any other form apart from the Docker image.
 
 ## Docker File
 ```docker run -ti jeffjerseycow/fuzzle:latest```
