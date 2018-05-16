@@ -29,7 +29,9 @@ For now please watch the following videos as I've not had time to write proper d
 
 https://www.youtube.com/watch?v=exoa4GfhqVI (hello_world)
 
-https://www.youtube.com/watch?v=HECIJ-rTLws (http_server) 
+https://www.youtube.com/watch?v=HECIJ-rTLws (http_server parent) 
+
+https://www.youtube.com/watch?v=uqxO-8VbYNA (http_server child)
 
 The ```--follow_child / -f``` switch changes the behaviour of intercepted syscalls and directs the emulator to follow the child process path &mdash; this behaviour can be seen in the http_server video.
 
