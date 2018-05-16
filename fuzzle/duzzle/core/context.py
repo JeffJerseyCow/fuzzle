@@ -426,6 +426,16 @@ class DuzzleContext(object):
 
         return resp
 
+    def follow_child(self):
+        """
+        """
+        resp = self.write('-gdb-set follow-fork-mode child')
+        if resp['message'] != 'done':
+            raise Exception('Cannot set register {} to {}'.format(name, value))
+
+        return resp
+
+
     def shutdown(self):
         """
         Kill all threads and exits gdb.

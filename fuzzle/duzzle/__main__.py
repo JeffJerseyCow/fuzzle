@@ -36,18 +36,23 @@ def main(duzzle=DuzzleContext()):
                         '-o',
                         required=True,
                         help='Output file path to write packed UZL file')
+    parser.add_argument('--follow-child',
+                        '-f',
+                        action='store_true',
+                        help='Follow child processes')
     parser.add_argument('--verbose',
                         '-v',
                         action='store_true',
                         help='Enable verbosity')
-    parser.add_argument('--version', action='version', version='0.0.8')
+    parser.add_argument('--version', action='version', version='0.0.9')
     args = parser.parse_args()
 
     # Clean up args
-    verbose = args.verbose
     address = args.address
     port = args.port
     out_file = args.out_file
+    follow_child = args.follow_child
+    verbose = args.verbose
 
     # Import target architecture
     arch = importlib.import_module('fuzzle.duzzle.archs.{}'.format(args.arch))
@@ -74,10 +79,14 @@ def main(duzzle=DuzzleContext()):
     duzzle.connect(address=address, port=port)
     print('[*] Process PID "{}"'.format(duzzle.pid))
 
-    # Break on main
+    # Set breakpoint
     duzzle.breakpoint(breakpoint)
 
-    # Run
+    # Follow child processes
+    if follow_child:
+        duzzle.follow_child()
+
+    # Continue execution
     duzzle.run()
 
     # Wait for break point
