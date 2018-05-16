@@ -31,4 +31,13 @@ https://www.youtube.com/watch?v=exoa4GfhqVI (hello_world)
 
 https://www.youtube.com/watch?v=HECIJ-rTLws (http_server) 
 
-The --follow_child / -f switch will change the behaviour of the intercepted syscalls and follow either the child process path or remain in the parent. This behaviour can be seen in the http_server video.
+The ```--follow_child / -f``` switch changes the behaviour of intercepted syscalls and directs the emulator to follow the child process path &mdash; this behaviour can be seen in the http_server video.
+
+## Caveats
+By default Linux operates on the principle of late binding/lazy loading. This means that when symbols are resolved for the first time the process calls to the PLT, jumps to the GOT and into the dynamic loader. After it’s finished doing its magic subsequent calls will automatically jump to the correct library at the correct offset.
+
+To prevent clobbering registers the loader saves everything before performing the dlopen/dlsym routines &mdash; part of which involves the AVX instruction set. Unfortunately unicorn runs on top of an older version of QEMU and does not offer support for the vector extensions.
+
+Because of this it is preferable to either resolve symbols at start-up with the ```LD_BIND_NOW=1``` environment variable, attack binaries without AVX &mdash common in the embedded world &mdash or attack functions that have previously had their symbols resolved.
+
+Until unicorn is integrated with a later version of QEMU I cannot resolve this problem.
