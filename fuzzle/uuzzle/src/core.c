@@ -211,6 +211,7 @@ bool uzl_parse_opts(int argc, char **argv, uzl_opts_t *opts)
   /* Initialise defaults */
   opts->verbose = false;
   opts->follow_child = false;
+  opts->quiet = false;
   opts->uzl_file_name = NULL;
 
   /* Parse arguments */
@@ -219,11 +220,12 @@ bool uzl_parse_opts(int argc, char **argv, uzl_opts_t *opts)
   {
     {"verbose", no_argument, 0, 'v'},
     {"follow_child", no_argument, 0, 'f'},
+    {"quiet", no_argument, 0, 'q'},
     {0, 0, 0, 0}
   };
 
   uint64_t option_index = 0;
-  while((c = getopt_long(argc, argv, "fv", long_options,
+  while((c = getopt_long(argc, argv, "fvq", long_options,
                         (int *) &option_index)) != -1)
   {
     switch(c)
@@ -233,6 +235,9 @@ bool uzl_parse_opts(int argc, char **argv, uzl_opts_t *opts)
         break;
       case 'f':
         opts->follow_child = true;
+        break;
+      case 'q':
+        opts->quiet = true;
         break;
       case '?':
         return false;

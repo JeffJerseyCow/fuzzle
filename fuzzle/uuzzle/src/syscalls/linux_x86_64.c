@@ -53,12 +53,29 @@ void linux_x86_64_sys_hook_cb(uc_engine *uc, void *usr_data, uzl_opts_t *opts)
 void linux_x86_64_sys_write(uc_engine *uc, linux_x86_64_sys_regs_t *sys_regs,
                             uzl_opts_t *opts)
 {
+  /* Quiet mode */ 
+  if(opts->quiet)
+    return;
+
   /* Emulate syscall */
   uint8_t *buf = calloc(1, sys_regs->rdx);
   uc_mem_read(uc, sys_regs->rsi, buf, sys_regs->rdx);
 
   /* Write to stdout */
-  printf("%s", buf);
+  switch(sys_regs->rdi)
+  {
+    case STDIN_FILENO:
+      printf("stdin>:  %s", buf);
+      break;
+    case STDOUT_FILENO:
+      printf("stdout>: %s", buf);
+      break;
+    case STDERR_FILENO:
+      printf("stderr>: %s", buf);
+      break;
+    default:
+      printf("fd %lu>:\t%s", (uint64_t) sys_regs->rdi, buf);
+  }
 
   /* Return code*/
   uc_reg_write(uc, UC_X86_REG_RAX, &(sys_regs->rdx));

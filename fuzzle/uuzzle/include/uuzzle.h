@@ -9,14 +9,15 @@
 
 /* Definitions */
 #define PERMS(__perms) \
-        ((__perms & 0x1) << 2) \
-        | (__perms & 0x2) \
-        | ((__perms &0x4) >> 2)
+  ((__perms & 0x1) << 2) \
+  | (__perms & 0x2) \
+  | ((__perms &0x4) >> 2)
 
 /* Structures */
 typedef struct uzl_options {
   bool verbose;
   bool follow_child;
+  bool quiet;
   char *uzl_file_name;
 } uzl_opts_t;
 
