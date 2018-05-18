@@ -23,10 +23,10 @@ bool pzl_create_reg_rec(pzl_ctx_t *context, void *usr_reg)
     switch(context->hdr_rec.arch)
     {
         case X86_64:
-            reg_rec->usr_reg = (void *) malloc(sizeof(user_regs_x86_64_t));
-            memcpy(reg_rec->usr_reg, usr_reg, sizeof(user_regs_x86_64_t));
-            reg_rec->length = (2 + 8 + 8) + sizeof(user_regs_x86_64_t);
-            reg_rec->usr_reg_len = sizeof(user_regs_x86_64_t);
+            reg_rec->usr_reg = (void *) malloc(sizeof(usr_regs_x86_64_t));
+            memcpy(reg_rec->usr_reg, usr_reg, sizeof(usr_regs_x86_64_t));
+            reg_rec->length = (2 + 8 + 8) + sizeof(usr_regs_x86_64_t);
+            reg_rec->usr_reg_len = sizeof(usr_regs_x86_64_t);
             context->reg_rec = reg_rec;
             break;
 

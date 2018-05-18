@@ -92,8 +92,8 @@ int main(int argc, char **argv, char **envp)
     }
 
     /* Create reg record */
-    user_regs_x86_64_t usr_reg;
-    memset(&usr_reg, 0x45, sizeof(user_regs_x86_64_t));
+    usr_regs_x86_64_t usr_reg;
+    memset(&usr_reg, 0x45, sizeof(usr_regs_x86_64_t));
     pzl_create_reg_rec(context, &usr_reg);
 
     /* Pack data */

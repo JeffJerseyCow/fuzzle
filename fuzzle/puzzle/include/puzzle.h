@@ -202,7 +202,7 @@ typedef struct user_regs_struct_x86_64
     uint64_t es;
     uint64_t fs;
     uint64_t gs;
-} user_regs_x86_64_t;
+} usr_regs_x86_64_t;
 
 /*
 Puzzle Context

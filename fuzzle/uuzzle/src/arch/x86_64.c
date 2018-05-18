@@ -6,14 +6,32 @@
 #include <stdbool.h>
 
 
-/* Set x86_64 specific registers */
-bool uzl_set_x86_64_registers(pzl_ctx_t *context, uc_engine *uc)
+/* Get user registers */
+bool uzl_get_usr_regs_x86_64(pzl_ctx_t *pzl_ctx, void **usr_regs,
+  uzl_opts_t *opts)
+  {
+    *usr_regs = pzl_ctx->reg_rec->usr_reg;
+    return true;
+  }
+
+/* Get program counter */
+bool uzl_get_x86_64_pc(pzl_ctx_t *pzl_ctx, uint64_t *pc)
 {
-  user_regs_x86_64_t usr_reg;
-  memcpy(&usr_reg, context->reg_rec->usr_reg, context->reg_rec->usr_reg_len);
+  usr_regs_x86_64_t usr_reg;
+  memcpy(&usr_reg, pzl_ctx->reg_rec->usr_reg, pzl_ctx->reg_rec->usr_reg_len);
+  *pc = usr_reg.rip;
+  return true;
+}
+
+/* Set x86_64 specific registers */
+bool uzl_set_x86_64_registers(pzl_ctx_t *pzl_ctx, uc_engine *uc,
+                              uzl_opts_t *opts)
+{
+  usr_regs_x86_64_t usr_reg;
+  memcpy(&usr_reg, pzl_ctx->reg_rec->usr_reg, pzl_ctx->reg_rec->usr_reg_len);
 
   /* Set up msrs */
-  if(!uzl_set_x86_64_msr(context, uc, usr_reg))
+  if(!uzl_set_x86_64_msr(pzl_ctx, uc, usr_reg, opts))
     return false;
 
   /* Set up registers */
@@ -46,9 +64,8 @@ bool uzl_set_x86_64_registers(pzl_ctx_t *context, uc_engine *uc)
 }
 
 /* Set up msrs */
-bool uzl_set_x86_64_msr(pzl_ctx_t *context,
-                        uc_engine *uc,
-                        user_regs_x86_64_t usr_reg)
+bool uzl_set_x86_64_msr(pzl_ctx_t *pzl_ctx, uc_engine *uc,
+                        usr_regs_x86_64_t usr_reg, uzl_opts_t *opts)
 {
   uc_err err;
   uint8_t write_msr[] = "\x0f\x30";
@@ -96,12 +113,4 @@ bool uzl_set_x86_64_msr(pzl_ctx_t *context,
   uc_mem_unmap(uc, 0x1000,  2 * 1024 * 1024);
 
   return true;
-}
-
-/* Get program counter */
-uint64_t uzl_get_x86_64_pc(pzl_ctx_t *context)
-{
-  user_regs_x86_64_t usr_reg;
-  memcpy(&usr_reg, context->reg_rec->usr_reg, context->reg_rec->usr_reg_len);
-  return usr_reg.rip;
 }

@@ -127,7 +127,7 @@ int main(int argc, char **argv, char **envp)
     };
 
     printf("--- Register record ---\n");
-    user_regs_x86_64_t usr_reg;
+    usr_regs_x86_64_t usr_reg;
 
     memcpy(&usr_reg, context->reg_rec->usr_reg, context->reg_rec->usr_reg_len);
     printf("r15: %p\n", (void *) usr_reg.r15);

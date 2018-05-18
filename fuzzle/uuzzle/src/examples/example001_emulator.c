@@ -26,7 +26,7 @@ int main(int argc, char **argv, char **envp)
   uzl_opts_t opts;
   if(!uzl_parse_opts(argc, argv, &opts))
   {
-    printf("example000_emulator: cannot parse arguments\n");
+    printf("example001_emulator: cannot parse arguments\n");
     return false;
   }
 
@@ -38,7 +38,7 @@ int main(int argc, char **argv, char **envp)
   ret = stat(opts.uzl_file_name, &statbuf);
   if(ret != 0 || S_ISDIR(statbuf.st_mode))
   {
-      printf("example000_emulator: cannot read file '%s'\n",
+      printf("example001_emulator: cannot read file '%s'\n",
              opts.uzl_file_name);
       return false;
   }
@@ -46,7 +46,7 @@ int main(int argc, char **argv, char **envp)
   uint64_t file_size = statbuf.st_size;
   if(file_size < 1)
   {
-      printf("example000_emulator: cannot read empty file '%s\n'", file_path);
+      printf("example001_emulator: cannot read empty file '%s\n'", file_path);
       return false;
   }
 
@@ -58,7 +58,7 @@ int main(int argc, char **argv, char **envp)
   in_file = fopen((const char *) file_path, "r");
   if(in_file == NULL)
   {
-      printf("example000_emulator: cannot read file '%s'\n", file_path);
+      printf("example001_emulator: cannot read file '%s'\n", file_path);
       free(in_data);
       in_data = NULL;
       return false;
@@ -68,7 +68,7 @@ int main(int argc, char **argv, char **envp)
   uint64_t bytes_read = fread(in_data, 1, file_size, in_file);
   if(bytes_read != file_size || bytes_read <= 0)
   {
-      printf("example000_emulator: cannot read file correctly\n");
+      printf("example001_emulator: cannot read file correctly\n");
       free(in_data);
       in_data = NULL;
       fclose(in_file);
@@ -83,14 +83,14 @@ int main(int argc, char **argv, char **envp)
   pzl_init(&pzl_ctx, UNKN_ARCH);
   if(pzl_ctx == false)
   {
-    printf("example000_emulator: initialise pzl_ctx\n");
+    printf("example001_emulator: initialise pzl_ctx\n");
     return false;
   }
 
   /* Unpack fuzzle file */
   if(pzl_unpack(pzl_ctx, in_data, bytes_read) == false)
   {
-    printf("example000_emulator: cannot unpack data\n");
+    printf("example001_emulator: cannot unpack data\n");
     goto error;
   }
 
@@ -99,30 +99,43 @@ int main(int argc, char **argv, char **envp)
   uc_err err;
 
   /* Initialise unicorn */
-  uint8_t uc_arch;
-  uint8_t uc_mode;
-  uzl_get_uc_arch(pzl_ctx, &uc_arch);
-  uzl_get_uc_mode(pzl_ctx, &uc_mode);
-  err = uc_open(uc_arch, uc_mode, &uc);
+  uint8_t arch, mode;
+  uzl_get_uc_arch(pzl_ctx, &arch);
+  uzl_get_uc_mode(pzl_ctx, &mode);
+  err = uc_open(arch, mode, &uc);
   if(err != UC_ERR_OK)
   {
-    printf("example000_emulator: cannot initialise unicorn engine\n");
+    printf("example001_emulator: cannot initialise unicorn engine\n");
     goto error;
   }
 
   /* Map memory */
   if(!uzl_map_memory(pzl_ctx, uc, &opts))
   {
-    printf("example000_emulator: cannot map memory regions\n");
+    printf("example001_emulator: cannot map memory regions\n");
     goto error;
   }
 
   /* Map registers */
   if(!uzl_set_registers(pzl_ctx, uc, &opts))
   {
-    printf("example000_emulator: cannot map registers\n");
+    printf("example001_emulator: cannot map registers\n");
     goto error;
   }
+
+  /* Get user registers */
+  usr_regs_x86_64_t *usr_regs = NULL;
+  if(!uzl_get_usr_regs(pzl_ctx, (void **) &usr_regs, &opts))
+  {
+      printf("example001_emulator: cannot get user registers\n");
+      goto error;
+  }
+
+  /* Debug */
+  printf("buf: %p\n", (void *) usr_regs->rsi);
+  printf("sze: %p\n", (void *) usr_regs->rdx);
+  printf("rip: %p\n", (void *) usr_regs->rip);
+
 
 #if defined __WITH_TRACE__
 
@@ -132,7 +145,7 @@ int main(int argc, char **argv, char **envp)
 
   /* Register trace hook */
   uc_hook trace_hook;
-  uc_hook_add(uc, &trace_hook,UC_HOOK_CODE, example000_emulator_hook_code,
+  uc_hook_add(uc, &trace_hook, UC_HOOK_CODE, example000_emulator_hook_code,
               NULL, 1, 0);
 #endif
 
@@ -140,7 +153,7 @@ int main(int argc, char **argv, char **envp)
   uc_hook sys_hook;
   if(!uzl_reg_sys(pzl_ctx, uc, &sys_hook, &opts))
   {
-    printf("example000_emulator: cannot register syscalls\n");
+    printf("example001_emulator: cannot register syscalls\n");
     goto error;
   }
 
@@ -150,7 +163,7 @@ int main(int argc, char **argv, char **envp)
   err = uc_emu_start(uc, pc, 0, 0, 0);
   if(err != UC_ERR_OK)
   {
-    printf("example000_emulator: failed to start emulator '%s'\n",
+    printf("example001_emulator: failed to start emulator '%s'\n",
            uc_strerror(err));
     goto error;
   }
@@ -178,17 +191,19 @@ bool init_capstone(pzl_ctx_t *pzl_ctx)
   uzl_get_cs_arch(pzl_ctx, &arch);
   uzl_get_cs_mode(pzl_ctx, &mode);
   if(cs_open(arch, mode, &handle) != CS_ERR_OK)
-    {
-      printf("init_capstone: cannot initialise capstone\n");
-      return false;
-    }
+  {
+    printf("init_capstone: cannot initialise capstone\n");
+    return false;
+  }
 
-    return true;
+  return true;
 }
 
 /* Capstone globals */
-void example000_emulator_hook_code(uc_engine *uc, uint64_t address,
-                                   uint32_t size, void *usr_data)
+void example000_emulator_hook_code(uc_engine *uc,
+                                          uint64_t address,
+                                          uint32_t size,
+                                          void *usr_data)
 {
   uint64_t count;
   uint8_t *data = (void *) malloc(size);
@@ -205,7 +220,9 @@ void example000_emulator_hook_code(uc_engine *uc, uint64_t address,
   {
     for(int i = 0; i < count; i ++)
     {
-      printf("%p: %s %s\n", (void *) address, insn[i].mnemonic,
+      printf("%p: %s %s\n",
+             (void *) address,
+             insn[i].mnemonic,
              insn[i].op_str);
     }
   }

@@ -24,14 +24,11 @@ enum linux_x86_64_sys_table {
 };
 
 /* Prototypes */
-void linux_x86_64_sys_hook_cb(uc_engine *uc, void *user_data);
-void linux_x86_64_sys_write(uc_engine *uc,
-                            linux_x86_64_sys_regs_t *sys_regs,
-                            uzl_options_t *opts);
-void linux_x86_64_sys_fork(uc_engine *uc,
-                           linux_x86_64_sys_regs_t *sys_regs,
-                           uzl_options_t *opts);
-void linux_x86_64_sys_clone(uc_engine *uc,
-                            linux_x86_64_sys_regs_t *sys_regs,
-                            uzl_options_t *opts);                           
+void linux_x86_64_sys_hook_cb(uc_engine *uc, void *user_data, uzl_opts_t *opts);
+void linux_x86_64_sys_write(uc_engine *uc, linux_x86_64_sys_regs_t *sys_regs,
+                            uzl_opts_t *opts);
+void linux_x86_64_sys_fork(uc_engine *uc, linux_x86_64_sys_regs_t *sys_regs,
+                           uzl_opts_t *opts);
+void linux_x86_64_sys_clone(uc_engine *uc, linux_x86_64_sys_regs_t *sys_regs,
+                            uzl_opts_t *opts);
 #endif

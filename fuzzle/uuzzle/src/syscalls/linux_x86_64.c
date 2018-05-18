@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <puzzle.h>
 #include <uuzzle.h>
 #include <unicorn.h>
@@ -9,8 +10,8 @@
 
 
 /* Register linux x86_64 syscalls */
-bool uzl_reg_linux_x86_64_sys(pzl_ctx_t *context, uc_engine *uc,
-                              uc_hook *sys_hook, uzl_options_t *opts)
+bool uzl_reg_linux_x86_64_sys(pzl_ctx_t *pzl_ctx, uc_engine *uc,
+                              uc_hook *sys_hook, uzl_opts_t *opts)
 {
   uc_hook_add(uc, sys_hook, UC_HOOK_INSN, linux_x86_64_sys_hook_cb,
               (void *) opts, 1, 0, UC_X86_INS_SYSCALL);
@@ -18,7 +19,7 @@ bool uzl_reg_linux_x86_64_sys(pzl_ctx_t *context, uc_engine *uc,
 }
 
 /* Syscall callback */
-void linux_x86_64_sys_hook_cb(uc_engine *uc, void *usr_data)
+void linux_x86_64_sys_hook_cb(uc_engine *uc, void *usr_data, uzl_opts_t *opts)
 {
   linux_x86_64_sys_regs_t sys_regs;
 
@@ -35,13 +36,13 @@ void linux_x86_64_sys_hook_cb(uc_engine *uc, void *usr_data)
   switch(sys_regs.rax)
   {
     case LINUX_X86_64_SYS_WRITE:
-      linux_x86_64_sys_write(uc, &sys_regs, (uzl_options_t *) usr_data);
+      linux_x86_64_sys_write(uc, &sys_regs, (uzl_opts_t *) usr_data);
       break;
     case LINUX_X86_64_SYS_CLONE:
-      linux_x86_64_sys_clone(uc, &sys_regs, (uzl_options_t *) usr_data);
+      linux_x86_64_sys_clone(uc, &sys_regs, (uzl_opts_t *) usr_data);
       break;
     case LINUX_X86_64_SYS_FORK:
-      linux_x86_64_sys_fork(uc, &sys_regs, (uzl_options_t *) usr_data);
+      linux_x86_64_sys_fork(uc, &sys_regs, (uzl_opts_t *) usr_data);
       break;
     default:
       return;
@@ -49,9 +50,8 @@ void linux_x86_64_sys_hook_cb(uc_engine *uc, void *usr_data)
 }
 
 /* Write syscall */
-void linux_x86_64_sys_write(uc_engine *uc,
-                            linux_x86_64_sys_regs_t *sys_regs,
-                            uzl_options_t *opts)
+void linux_x86_64_sys_write(uc_engine *uc, linux_x86_64_sys_regs_t *sys_regs,
+                            uzl_opts_t *opts)
 {
   /* Emulate syscall */
   uint8_t *buf = calloc(1, sys_regs->rdx);
@@ -68,9 +68,8 @@ void linux_x86_64_sys_write(uc_engine *uc,
 }
 
 /* Fork syscall */
-void linux_x86_64_sys_fork(uc_engine *uc,
-                          linux_x86_64_sys_regs_t *sys_regs,
-                          uzl_options_t *opts)
+void linux_x86_64_sys_fork(uc_engine *uc, linux_x86_64_sys_regs_t *sys_regs,
+                          uzl_opts_t *opts)
 {
   /* Return code*/
   if(opts->follow_child)
@@ -79,9 +78,8 @@ void linux_x86_64_sys_fork(uc_engine *uc,
 }
 
 /* Fork syscall */
-void linux_x86_64_sys_clone(uc_engine *uc,
-                           linux_x86_64_sys_regs_t *sys_regs,
-                           uzl_options_t *opts)
+void linux_x86_64_sys_clone(uc_engine *uc, linux_x86_64_sys_regs_t *sys_regs,
+                           uzl_opts_t *opts)
 {
   /* Return code*/
   if(opts->follow_child)

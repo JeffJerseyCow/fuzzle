@@ -53,7 +53,7 @@ uint64_t pzl_get_usr_reg_size(pzl_ctx_t *context)
     switch(context->hdr_rec.arch)
     {
         case X86_64:
-            return sizeof(user_regs_x86_64_t);
+            return sizeof(usr_regs_x86_64_t);
         default:
             printf("pzl_get_usr_reg_size: unknow architecture\n");
             return false;

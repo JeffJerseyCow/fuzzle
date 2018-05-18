@@ -18,27 +18,31 @@ typedef struct uzl_options {
   bool verbose;
   bool follow_child;
   char *uzl_file_name;
-} uzl_options_t;
+} uzl_opts_t;
 
 /* Prototypes */
 /* Core */
-uint8_t uzl_uc_arch(pzl_ctx_t *context);
-uint8_t uzl_uc_mode(pzl_ctx_t *context);
-uint8_t uzl_cs_arch(pzl_ctx_t *context);
-uint8_t uzl_cs_mode(pzl_ctx_t *context);
-bool uzl_map_memory(pzl_ctx_t *context, uc_engine *uc);
-bool uzl_set_registers(pzl_ctx_t *context, uc_engine *uc);
-uint64_t uzl_get_pc(pzl_ctx_t *context);
-bool uzl_reg_sys(pzl_ctx_t *context, uc_engine *uc, uc_hook *sys_hook,
-                 uzl_options_t *opts);
-bool uzl_parse_opts(uzl_options_t *opts, int argc, char **argv);
+bool uzl_get_uc_arch(pzl_ctx_t *pzl_ctx, uint8_t *arch);
+bool uzl_get_uc_mode(pzl_ctx_t *pzl_ctx, uint8_t *mode);
+bool uzl_get_cs_arch(pzl_ctx_t *pzl_ctx, uint8_t *arch);
+bool uzl_get_cs_mode(pzl_ctx_t *pzl_ctx, uint8_t *mode);
+bool uzl_get_pc(pzl_ctx_t *pzl_ctx, uint64_t *pc);
+bool uzl_get_usr_regs(pzl_ctx_t *pzl_ctx, void **usr_regs, uzl_opts_t *opts);
+bool uzl_set_registers(pzl_ctx_t *pzl_ctx, uc_engine *uc, uzl_opts_t *opts);
+bool uzl_map_memory(pzl_ctx_t *pzl_ctx, uc_engine *uc, uzl_opts_t *opts);
+bool uzl_reg_sys(pzl_ctx_t *pzl_ctx, uc_engine *uc, uc_hook *sys_hook,
+                 uzl_opts_t *opts);
+bool uzl_parse_opts(int argc, char **argv, uzl_opts_t *opts);
 
 /* x86_64 */
-bool uzl_set_x86_64_registers(pzl_ctx_t *context, uc_engine *uc);
-bool uzl_set_x86_64_msr(pzl_ctx_t *context, uc_engine *uc,
-                        user_regs_x86_64_t usr_reg);
-uint64_t uzl_get_x86_64_pc(pzl_ctx_t *context);
-bool uzl_reg_linux_x86_64_sys(pzl_ctx_t *context, uc_engine *uc,
-                              uc_hook *sys_hook, uzl_options_t *opts);
+bool uzl_get_usr_regs_x86_64(pzl_ctx_t *pzl_ctx, void **usr_regs,
+                             uzl_opts_t *opts);
+bool uzl_get_x86_64_pc(pzl_ctx_t *pzl_ctx, uint64_t *pc);
+bool uzl_set_x86_64_registers(pzl_ctx_t *pzl_ctx, uc_engine *uc,
+                              uzl_opts_t *opts);
+bool uzl_set_x86_64_msr(pzl_ctx_t *pzl_ctx, uc_engine *uc,
+                        usr_regs_x86_64_t usr_reg, uzl_opts_t *opts);
+bool uzl_reg_linux_x86_64_sys(pzl_ctx_t *pzl_ctx, uc_engine *uc,
+                              uc_hook *sys_hook, uzl_opts_t *opts);
 
 #endif
